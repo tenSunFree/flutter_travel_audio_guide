@@ -1,19 +1,62 @@
 # flutter_travel_audio_guide
 
+---
+
+## Introduction  
+
 Travel audio guide app with audio download, offline playback, and a built-in media player, built using Riverpod and Clean Architecture.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Preview  
 
-A few resources to get you started if this is your first Flutter project:
+<p align="left">
+  <img src="" width="460"/>
+</p> 
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+<p align="left">
+  <img src="" width="460"/>
+</p> 
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Features   
+
+---
+
+## Tech Stack  
+
+- Clean Architecture  
+  Layered software design (Independent domain logic, high testability, and strict separation of concerns)  
+- flutter_riverpod  
+  Reactive state management & dependency injection (Compile-safe providers, automatic lifecycle management, and improved testability)        
+
+---
+
+## Credits  
+
+This project is created for independent learning and demonstration purposes.
+Special thanks to the original author for their open-source contribution.
+
+---
+
+## Notes  
+
+Image resources are for learning and purposes only. Please do not use them for commercial purposes. 
+
+If there is any infringement, please contact me for removal. Thank you.  
+
+---
+
+## License  
+
+This repository is intended for learning and demonstration.  
+
+If you plan to open-source it, please choose a license and confirm third-party asset usage rights.  
+
+---
+
+## Project Structure  
 
 ```
 flutter_travel_audio_guide
@@ -42,6 +85,7 @@ flutter_travel_audio_guide
 │  │  │  ├─ buildOutputCleanup.lock
 │  │  │  ├─ cache.properties
 │  │  │  └─ outputFiles.bin
+│  │  ├─ config.properties
 │  │  ├─ file-system.probe
 │  │  ├─ noVersion
 │  │  │  └─ buildLogic.lock
@@ -162,8 +206,10 @@ flutter_travel_audio_guide
 │  ├─ core
 │  │  ├─ constants
 │  │  │  └─ api_constants.dart
-│  │  └─ error
-│  │     └─ exceptions.dart
+│  │  ├─ error
+│  │  │  └─ exceptions.dart
+│  │  └─ network
+│  │     └─ network_providers.dart
 │  ├─ features
 │  │  └─ audio_guide
 │  │     ├─ data
@@ -175,6 +221,8 @@ flutter_travel_audio_guide
 │  │     │  │  └─ audio_guide_page_model.dart
 │  │     │  └─ repositories
 │  │     │     └─ audio_guide_repository_impl.dart
+│  │     ├─ di
+│  │     │  └─ audio_guide_providers.dart
 │  │     ├─ domain
 │  │     │  ├─ entities
 │  │     │  │  ├─ audio_guide.dart
@@ -406,5 +454,4 @@ flutter_travel_audio_guide
       ├─ utils.h
       ├─ win32_window.cpp
       └─ win32_window.h
-
 ```
