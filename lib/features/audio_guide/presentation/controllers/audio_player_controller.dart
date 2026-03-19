@@ -1,16 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/services/audio_playback_service_impl.dart';
+import '../../di/audio_guide_providers.dart';
 import '../../domain/services/audio_playback_service.dart';
-
-final audioPlaybackServiceProvider = Provider.autoDispose
-    .family<AudioPlaybackService, String>((ref, path) {
-      final service = AudioPlaybackServiceImpl();
-      ref.onDispose(() {
-        service.dispose();
-      });
-      return service;
-    });
 
 final audioPlayerControllerProvider = StateNotifierProvider.autoDispose
     .family<AudioPlayerController, AudioPlaybackState, String>((ref, path) {

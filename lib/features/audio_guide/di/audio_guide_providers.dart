@@ -3,7 +3,9 @@ import '../../../core/network/network_providers.dart';
 import '../data/datasources/audio_guide_local_data_source.dart';
 import '../data/datasources/audio_guide_remote_data_source.dart';
 import '../data/repositories/audio_guide_repository_impl.dart';
+import '../data/services/audio_playback_service_impl.dart';
 import '../domain/repositories/audio_guide_repository.dart';
+import '../domain/services/audio_playback_service.dart';
 import '../domain/usecases/download_audio_guide_usecase.dart';
 import '../domain/usecases/get_audio_guides_usecase.dart';
 
@@ -31,3 +33,12 @@ final downloadAudioGuideUseCaseProvider = Provider<DownloadAudioGuideUseCase>((
 ) {
   return DownloadAudioGuideUseCase(ref.watch(audioGuideRepositoryProvider));
 });
+
+final audioPlaybackServiceProvider = Provider.autoDispose
+    .family<AudioPlaybackService, String>((ref, path) {
+      final service = AudioPlaybackServiceImpl();
+      ref.onDispose(() {
+        service.dispose();
+      });
+      return service;
+    });
