@@ -1,5 +1,40 @@
 package com.tensunfree.flutter_travel_audio_guide.flutter_travel_audio_guide
 
-import io.flutter.embedding.android.FlutterActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.health.connect.client.PermissionController
+import io.flutter.embedding.android.FlutterFragmentActivity
+import io.flutter.embedding.engine.FlutterEngine
 
-class MainActivity : FlutterActivity()
+/**
+ * FlutterFragmentActivity (not FlutterActivity) is required because
+ * registerForActivityResult() is only available on ComponentActivity,
+ * which FlutterFragmentActivity inherits from via FragmentActivity.
+ * Plain FlutterActivity extends android.app.Activity directly and does
+ * not expose that API.
+ */
+class MainActivity : FlutterFragmentActivity() {
+
+    /** Holds the continuation supplied by [HealthConnectManager.requestPermissions]. */
+    private var permissionCallback: ((Set<String>) -> Unit)? = null
+
+    /**
+     * ActivityResultLauncher for Health Connect permissions.
+     * Must be registered before onStart(), so we register it at field-init time.
+     */
+    private val requestHealthPermissions =
+        registerForActivityResult(
+            PermissionController.createRequestPermissionResultContract(),
+        ) { granted: Set<String> ->
+            permissionCallback?.invoke(granted)
+            permissionCallback = null
+        }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        val manager = HealthConnectManager(this) { permissions, callback ->
+            permissionCallback = callback
+            requestHealthPermissions.launch(permissions)
+        }
+        HealthConnectHostApi.setUp(flutterEngine.dartExecutor.binaryMessenger, manager)
+    }
+}

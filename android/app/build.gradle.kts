@@ -13,6 +13,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Required for java.time APIs (used by Health Connect) on API < 26 desugaring;
+        // also needed on API 26+ for coreLibraryDesugaring support in older minSdks.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -22,9 +25,8 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.tensunfree.flutter_travel_audio_guide.flutter_travel_audio_guide"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // Health Connect requires API 26+.
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -41,4 +43,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    implementation("androidx.health.connect:connect-client:1.1.0-rc01")
 }
