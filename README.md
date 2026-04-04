@@ -45,7 +45,7 @@ This project is for learning and technical practice.
 - path_provider  
   File system utility (Provides application-specific directories for storing and retrieving downloaded `.mp3` files)  
 - Pigeon  
-  Type-safe platform interop code generation (Bridges Flutter and native Android APIs with strongly typed messages, minimizes platform channel boilerplate, and improves reliability for Health Connect integration)
+  Type-safe platform interop code generation (Bridges Flutter and native APIs with strongly typed messages, minimizes platform channel boilerplate, and improves maintainability for platform integration)
 
 ---
 
