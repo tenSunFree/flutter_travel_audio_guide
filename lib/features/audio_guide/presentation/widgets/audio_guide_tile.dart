@@ -73,7 +73,7 @@ class AudioGuideTile extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                guide.modified,
+                '更新於 ${guide.modified}',
                 style: TextStyle(fontSize: 11, color: AppColors.textHint),
               ),
             ],
