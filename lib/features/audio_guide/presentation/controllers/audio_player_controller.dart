@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di/audio_guide_providers.dart';
+import '../../domain/entities/audio_playback_state.dart';
 import '../../domain/services/audio_playback_service.dart';
 
 final audioPlayerControllerProvider = StateNotifierProvider.autoDispose

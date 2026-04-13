@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import '../../domain/entities/audio_playback_state.dart';
 import '../../domain/services/audio_playback_service.dart';
 
 class AudioPlaybackServiceImpl implements AudioPlaybackService {

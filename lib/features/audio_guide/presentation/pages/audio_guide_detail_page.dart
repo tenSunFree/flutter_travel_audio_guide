@@ -5,7 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../step_tracking/di/step_tracking_providers.dart';
 import '../../../step_tracking/presentation/widgets/session_summary_card.dart';
 import '../../domain/entities/audio_guide.dart';
-import '../../domain/services/audio_playback_service.dart';
+import '../../domain/entities/audio_playback_state.dart';
 import '../controllers/audio_player_controller.dart';
 import '../widgets/common_app_bar.dart';
 
