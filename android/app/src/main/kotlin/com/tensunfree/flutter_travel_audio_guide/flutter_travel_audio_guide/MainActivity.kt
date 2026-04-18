@@ -25,6 +25,7 @@ class MainActivity : FlutterFragmentActivity() {
         registerForActivityResult(
             PermissionController.createRequestPermissionResultContract(),
         ) { granted: Set<String> ->
+            android.util.Log.d("HealthConnectManager", "permission launcher result: $granted")
             permissionCallback?.invoke(granted)
             permissionCallback = null
         }
@@ -32,8 +33,9 @@ class MainActivity : FlutterFragmentActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         val manager = HealthConnectManager(this) { permissions, callback ->
+            android.util.Log.d("HealthConnectManager", "permission launcher requested: $permissions")
             permissionCallback = callback
-            requestHealthPermissions.launch(permissions)
+            runOnUiThread { requestHealthPermissions.launch(permissions) }
         }
         HealthConnectHostApi.setUp(flutterEngine.dartExecutor.binaryMessenger, manager)
     }

@@ -2,6 +2,8 @@ package com.tensunfree.flutter_travel_audio_guide.flutter_travel_audio_guide
 
 import android.content.Context
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
@@ -51,17 +53,25 @@ class HealthConnectManager(
                     return@launch
                 }
                 val client = HealthConnectClient.getOrCreate(context)
-                if (client.permissionController.getGrantedPermissions()
-                        .containsAll(requiredPermissions)
-                ) {
+                val grantedBefore = client.permissionController.getGrantedPermissions()
+                if (grantedBefore.containsAll(requiredPermissions)) {
                     callback(Result.success(true))
                     return@launch
                 }
                 // Hand off to the Activity; result arrives via onRequestPermissions callback.
-                onRequestPermissions(requiredPermissions) { granted ->
-                    callback(Result.success(granted.containsAll(requiredPermissions)))
+                Handler(Looper.getMainLooper()).post {
+                    try {
+                        android.util.Log.d("HealthConnectManager", "launching Health Connect permission request")
+                        onRequestPermissions(requiredPermissions) { granted ->
+                            callback(Result.success(granted.containsAll(requiredPermissions)))
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("HealthConnectManager", "permission launcher failed", e)
+                        callback(Result.failure(e))
+                    }
                 }
             } catch (e: Exception) {
+                android.util.Log.e("HealthConnectManager", "requestPermissions failed", e)
                 callback(Result.failure(e))
             }
         }
@@ -83,6 +93,7 @@ class HealthConnectManager(
                 )
                 callback(Result.success(granted.containsAll(requiredPermissions)))
             } catch (e: Exception) {
+                android.util.Log.d("HealthConnectManager", "hasPermissions failed", e)
                 callback(Result.failure(e))
             }
         }

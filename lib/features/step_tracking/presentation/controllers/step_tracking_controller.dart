@@ -1,7 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/exercise_summary_data.dart';
 import '../../domain/services/step_tracking_service.dart';
 
@@ -51,8 +50,11 @@ class StepTrackingController extends StateNotifier<StepTrackingState> {
     final available = await _service.checkAvailability();
     if (!available) return;
     state = state.copyWith(isAvailable: true);
-
-    final granted = await _service.requestPermissions();
+    var granted = await _service.hasPermissions();
+    debugPrint('StepTrackingController, _init, granted: $granted');
+    if (!granted) {
+      granted = await _service.requestPermissions();
+    }
     state = state.copyWith(hasPermission: granted);
   }
 
