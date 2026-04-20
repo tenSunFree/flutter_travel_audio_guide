@@ -50,9 +50,6 @@ class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
         }
       }
     });
-    debugPrint(
-      '_AudioGuideDetailPageState, stepState.isAvailable: ${stepState.isAvailable}, stepState.hasPermission: ${stepState.hasPermission}',
-    );
     return Scaffold(
       appBar: const CommonAppBar(),
       body: Center(
@@ -120,7 +117,9 @@ class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
                 ),
               ],
               // Step count (Android + Health Connect only)
-              if (stepState.isAvailable && stepState.hasPermission) ...[
+              if (stepState.isAvailable &&
+                  stepState.hasHealthConnectPermission &&
+                  stepState.hasSensorPermission) ...[
                 const SizedBox(height: 24),
                 _StepCountBadge(
                   steps: stepState.steps,

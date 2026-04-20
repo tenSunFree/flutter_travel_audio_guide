@@ -26,7 +26,9 @@ class StepTrackingServiceImpl implements StepTrackingService {
   @override
   Future<double> getDistanceBetween(DateTime start, DateTime end) async {
     final cm = await _api.getDistanceBetween(
-        start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+      start.millisecondsSinceEpoch,
+      end.millisecondsSinceEpoch,
+    );
     return cm / 100.0;
   }
 
@@ -40,6 +42,32 @@ class StepTrackingServiceImpl implements StepTrackingService {
       (data.distanceMeters * 100).round(),
     );
   }
+
+  @override
+  Future<bool> isStepSensorAvailable() => _api.isStepSensorAvailable();
+
+  @override
+  Future<void> startStepSensorTracking() => _api.startStepSensorTracking();
+
+  @override
+  Future<void> pauseStepSensorTracking() => _api.pauseStepSensorTracking();
+
+  @override
+  Future<int> stopStepSensorTracking() => _api.stopStepSensorTracking();
+
+  @override
+  Future<int> getCurrentSensorSteps() => _api.getCurrentSensorSteps();
+
+  @override
+  Future<bool> hasActivityRecognitionPermission() =>
+      _api.hasActivityRecognitionPermission();
+
+  @override
+  Future<bool> requestActivityRecognitionPermission() =>
+      _api.requestActivityRecognitionPermission();
+
+  @override
+  Future<void> resumeStepSensorTracking() => _api.resumeStepSensorTracking();
 }
 
 /// Returned on non-Android platforms so the rest of the app compiles unchanged.
@@ -63,4 +91,28 @@ class NoOpStepTrackingService implements StepTrackingService {
 
   @override
   Future<void> writeExerciseSession(ExerciseSummaryData data) async {}
+
+  @override
+  Future<bool> isStepSensorAvailable() async => false;
+
+  @override
+  Future<void> startStepSensorTracking() async {}
+
+  @override
+  Future<void> pauseStepSensorTracking() async {}
+
+  @override
+  Future<int> stopStepSensorTracking() async => 0;
+
+  @override
+  Future<int> getCurrentSensorSteps() async => 0;
+
+  @override
+  Future<bool> hasActivityRecognitionPermission() async => false;
+
+  @override
+  Future<bool> requestActivityRecognitionPermission() async => false;
+
+  @override
+  Future<void> resumeStepSensorTracking() async {}
 }

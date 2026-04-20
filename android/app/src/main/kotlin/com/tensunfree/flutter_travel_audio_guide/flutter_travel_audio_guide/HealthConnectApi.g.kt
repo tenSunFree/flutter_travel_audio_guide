@@ -83,6 +83,15 @@ interface HealthConnectHostApi {
         callback: (Result<Boolean>) -> Unit
     )
 
+    fun isStepSensorAvailable(callback: (Result<Boolean>) -> Unit)
+    fun startStepSensorTracking(callback: (Result<Unit>) -> Unit)
+    fun pauseStepSensorTracking(callback: (Result<Unit>) -> Unit)
+    fun stopStepSensorTracking(callback: (Result<Long>) -> Unit)
+    fun getCurrentSensorSteps(callback: (Result<Long>) -> Unit)
+    fun requestActivityRecognitionPermission(callback: (Result<Boolean>) -> Unit)
+    fun hasActivityRecognitionPermission(callback: (Result<Boolean>) -> Unit)
+    fun resumeStepSensorTracking(callback: (Result<Unit>) -> Unit)
+
     companion object {
         /** The codec used by HealthConnectHostApi. */
         val codec: MessageCodec<Any?> by lazy {
@@ -247,6 +256,179 @@ interface HealthConnectHostApi {
                             } else {
                                 val data = result.getOrNull()
                                 reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.isStepSensorAvailable$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.isStepSensorAvailable { result: Result<Boolean> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.startStepSensorTracking$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.startStepSensorTracking { result: Result<Unit> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                reply.reply(wrapResult(null))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.pauseStepSensorTracking$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.pauseStepSensorTracking { result: Result<Unit> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                reply.reply(wrapResult(null))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.stopStepSensorTracking$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.stopStepSensorTracking { result: Result<Long> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.getCurrentSensorSteps$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.getCurrentSensorSteps { result: Result<Long> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.requestActivityRecognitionPermission$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.requestActivityRecognitionPermission { result: Result<Boolean> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.hasActivityRecognitionPermission$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.hasActivityRecognitionPermission { result: Result<Boolean> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                val data = result.getOrNull()
+                                reply.reply(wrapResult(data))
+                            }
+                        }
+                    }
+                } else {
+                    channel.setMessageHandler(null)
+                }
+            }
+            run {
+                val channel = BasicMessageChannel<Any?>(
+                    binaryMessenger,
+                    "dev.flutter.pigeon.flutter_travel_audio_guide.HealthConnectHostApi.resumeStepSensorTracking$separatedMessageChannelSuffix",
+                    codec
+                )
+                if (api != null) {
+                    channel.setMessageHandler { _, reply ->
+                        api.resumeStepSensorTracking { result: Result<Unit> ->
+                            val error = result.exceptionOrNull()
+                            if (error != null) {
+                                reply.reply(wrapError(error))
+                            } else {
+                                reply.reply(wrapResult(null))
                             }
                         }
                     }

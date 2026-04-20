@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.time.Instant
+import androidx.core.content.ContextCompat
 
 /**
  * Implements [HealthConnectHostApi] and exposes Health Connect step data to Flutter via Pigeon.
@@ -29,7 +30,10 @@ import java.time.Instant
 class HealthConnectManager(
     private val context: Context,
     private val onRequestPermissions: (Set<String>, (Set<String>) -> Unit) -> Unit,
+    private val onRequestActivityRecognition: ((Boolean) -> Unit) -> Unit,
 ) : HealthConnectHostApi {
+
+    private val stepSensor = StepSensorManager(context)
 
     private val requiredPermissions = setOf(
         HealthPermission.getReadPermission(StepsRecord::class),
@@ -61,7 +65,6 @@ class HealthConnectManager(
                 // Hand off to the Activity; result arrives via onRequestPermissions callback.
                 Handler(Looper.getMainLooper()).post {
                     try {
-                        android.util.Log.d("HealthConnectManager", "launching Health Connect permission request")
                         onRequestPermissions(requiredPermissions) { granted ->
                             callback(Result.success(granted.containsAll(requiredPermissions)))
                         }
@@ -86,14 +89,8 @@ class HealthConnectManager(
                 }
                 val client = HealthConnectClient.getOrCreate(context)
                 val granted = client.permissionController.getGrantedPermissions()
-                android.util.Log.d("HealthConnectManager", "grantedPermissions: $granted")
-                android.util.Log.d(
-                    "HealthConnectManager",
-                    "requiredPermissions: $requiredPermissions"
-                )
                 callback(Result.success(granted.containsAll(requiredPermissions)))
             } catch (e: Exception) {
-                android.util.Log.d("HealthConnectManager", "hasPermissions failed", e)
                 callback(Result.failure(e))
             }
         }
@@ -196,4 +193,47 @@ class HealthConnectManager(
     // Helpers
     private fun isSdkAvailable(): Boolean =
         HealthConnectClient.getSdkStatus(context) == HealthConnectClient.SDK_AVAILABLE
+
+    override fun isStepSensorAvailable(callback: (Result<Boolean>) -> Unit) {
+        callback(Result.success(stepSensor.isAvailable()))
+    }
+
+    override fun startStepSensorTracking(callback: (Result<Unit>) -> Unit) {
+        stepSensor.startSession()
+        callback(Result.success(Unit))
+    }
+
+    override fun pauseStepSensorTracking(callback: (Result<Unit>) -> Unit) {
+        stepSensor.pause()
+        callback(Result.success(Unit))
+    }
+
+    override fun stopStepSensorTracking(callback: (Result<Long>) -> Unit) {
+        callback(Result.success(stepSensor.stopAndGetSteps()))
+    }
+
+    override fun getCurrentSensorSteps(callback: (Result<Long>) -> Unit) {
+        callback(Result.success(stepSensor.getCurrentSteps()))
+    }
+
+    override fun resumeStepSensorTracking(callback: (Result<Unit>) -> Unit) {
+        stepSensor.resume()
+        callback(Result.success(Unit))
+    }
+
+    override fun hasActivityRecognitionPermission(callback: (Result<Boolean>) -> Unit) {
+        val granted = ContextCompat.checkSelfPermission(
+            context,
+            android.Manifest.permission.ACTIVITY_RECOGNITION
+        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        callback(Result.success(granted))
+    }
+
+    override fun requestActivityRecognitionPermission(callback: (Result<Boolean>) -> Unit) {
+        Handler(Looper.getMainLooper()).post {
+            onRequestActivityRecognition { granted ->
+                callback(Result.success(granted))
+            }
+        }
+    }
 }

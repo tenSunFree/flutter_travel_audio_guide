@@ -36,4 +36,29 @@ abstract class HealthConnectHostApi {
     int steps,
     int distanceCentimetres,
   );
+
+  @async
+  bool isStepSensorAvailable();
+
+  @async
+  void startStepSensorTracking();
+
+  @async
+  void pauseStepSensorTracking();
+
+  /// Returns the final accumulated step count
+  @async
+  int stopStepSensorTracking();
+
+  @async
+  int getCurrentSensorSteps();
+
+  @async
+  bool requestActivityRecognitionPermission();
+
+  @async
+  bool hasActivityRecognitionPermission();
+
+  @async
+  void resumeStepSensorTracking();
 }

@@ -17,6 +17,14 @@ class MainActivity : FlutterFragmentActivity() {
     /** Holds the continuation supplied by [HealthConnectManager.requestPermissions]. */
     private var permissionCallback: ((Set<String>) -> Unit)? = null
 
+    private var activityRecognitionCallback: ((Boolean) -> Unit)? = null
+
+    private val requestActivityRecognition =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            activityRecognitionCallback?.invoke(granted)
+            activityRecognitionCallback = null
+        }
+
     /**
      * ActivityResultLauncher for Health Connect permissions.
      * Must be registered before onStart(), so we register it at field-init time.
@@ -32,11 +40,27 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        val manager = HealthConnectManager(this) { permissions, callback ->
-            android.util.Log.d("HealthConnectManager", "permission launcher requested: $permissions")
-            permissionCallback = callback
-            runOnUiThread { requestHealthPermissions.launch(permissions) }
-        }
+        val manager = HealthConnectManager(
+            context = this,
+            onRequestPermissions = { permissions, callback ->
+                android.util.Log.d(
+                    "HealthConnectManager",
+                    "permission launcher requested: $permissions"
+                )
+                permissionCallback = callback
+                runOnUiThread { requestHealthPermissions.launch(permissions) }
+            },
+            onRequestActivityRecognition = { callback ->
+                activityRecognitionCallback = callback
+                runOnUiThread {
+                    requestActivityRecognition.launch(
+                        android.Manifest.permission.ACTIVITY_RECOGNITION
+                    )
+                }
+            }
+        )
+
+
         HealthConnectHostApi.setUp(flutterEngine.dartExecutor.binaryMessenger, manager)
     }
 }

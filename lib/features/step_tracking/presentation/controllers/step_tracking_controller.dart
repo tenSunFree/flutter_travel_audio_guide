@@ -3,32 +3,47 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import '../../domain/entities/exercise_summary_data.dart';
 import '../../domain/services/step_tracking_service.dart';
+import '../enums/step_tracking_source.dart';
 
 class StepTrackingState {
   const StepTrackingState({
     this.isAvailable = false,
-    this.hasPermission = false,
+    this.hasHealthConnectPermission = false,
+    this.hasSensorPermission = false,
+    this.source = StepTrackingSource.sensor, // 預設 sensor
     this.steps = 0,
     this.distance = 0.0,
     this.isTracking = false,
   });
 
   final bool isAvailable;
-  final bool hasPermission;
+  final bool hasHealthConnectPermission;
+  final bool hasSensorPermission;
+  final StepTrackingSource source;
   final int steps;
   final double distance;
   final bool isTracking;
 
+  // 方便外部判斷當前 source 是否已就緒
+  bool get isReady => source == StepTrackingSource.sensor
+      ? isAvailable && hasSensorPermission
+      : isAvailable && hasHealthConnectPermission;
+
   StepTrackingState copyWith({
     bool? isAvailable,
-    bool? hasPermission,
+    bool? hasHealthConnectPermission,
+    bool? hasSensorPermission,
+    StepTrackingSource? source,
     int? steps,
     double? distance,
     bool? isTracking,
   }) {
     return StepTrackingState(
       isAvailable: isAvailable ?? this.isAvailable,
-      hasPermission: hasPermission ?? this.hasPermission,
+      hasHealthConnectPermission:
+          hasHealthConnectPermission ?? this.hasHealthConnectPermission,
+      hasSensorPermission: hasSensorPermission ?? this.hasSensorPermission,
+      source: source ?? this.source,
       steps: steps ?? this.steps,
       distance: distance ?? this.distance,
       isTracking: isTracking ?? this.isTracking,
@@ -48,27 +63,47 @@ class StepTrackingController extends StateNotifier<StepTrackingState> {
 
   Future<void> _init() async {
     final available = await _service.checkAvailability();
-    if (!available) return;
-    state = state.copyWith(isAvailable: true);
-    var granted = await _service.hasPermissions();
-    debugPrint('StepTrackingController, _init, granted: $granted');
-    if (!granted) {
-      granted = await _service.requestPermissions();
+    state = state.copyWith(isAvailable: available);
+    // Health Connect 權限
+    var hcGranted = await _service.hasPermissions();
+    if (!hcGranted) hcGranted = await _service.requestPermissions();
+    state = state.copyWith(hasHealthConnectPermission: hcGranted);
+    // Sensor 權限
+    var sensorGranted = await _service.hasActivityRecognitionPermission();
+    if (!sensorGranted) {
+      sensorGranted = await _service.requestActivityRecognitionPermission();
     }
-    state = state.copyWith(hasPermission: granted);
+    state = state.copyWith(hasSensorPermission: sensorGranted);
   }
 
   /// Called by the detail page whenever playback transitions to playing.
   void onPlaybackStarted(String guideName) {
-    if (!state.isAvailable || !state.hasPermission) return;
+    if (!state.isReady) return;
     _guideName = guideName;
+    if (state.source == StepTrackingSource.sensor) {
+      if (_sessionStart == null) {
+        _service.startStepSensorTracking(); // 新 session
+      } else {
+        _service
+            .resumeStepSensorTracking(); // pause 後 resume → 但 Pigeon 沒有 resume
+        // 實際上 startStepSensorTracking 每次都從 0 開始，
+        // pause/resume 應改呼叫對應方法（見下方說明）
+      }
+    }
     _sessionStart ??= DateTime.now();
     _startTimer();
+    // if (!state.isAvailable || !state.hasPermission) return;
+    // _guideName = guideName;
+    // _sessionStart ??= DateTime.now();
+    // _startTimer();
   }
 
   /// Called by the detail page whenever playback pauses or stops.
   void onPlaybackPaused() {
     _stopTimer();
+    if (state.source == StepTrackingSource.sensor) {
+      _service.pauseStepSensorTracking();
+    }
   }
 
   /// Called when the guide finishes playing. Writes an exercise session and
@@ -76,11 +111,17 @@ class StepTrackingController extends StateNotifier<StepTrackingState> {
   Future<ExerciseSummaryData?> onPlaybackCompleted() async {
     _stopTimer();
     final start = _sessionStart;
-    if (start == null || !state.isAvailable || !state.hasPermission) return null;
+    if (start == null || !state.isReady) return null;
     final end = DateTime.now();
-    // Final fetch
-    final steps = await _service.getStepsBetween(start, end);
-    final distance = await _service.getDistanceBetween(start, end);
+    int steps;
+    double distance;
+    if (state.source == StepTrackingSource.sensor) {
+      steps = await _service.stopStepSensorTracking();
+      distance = steps * 0.78; // 平均步幅估算
+    } else {
+      steps = await _service.getStepsBetween(start, end);
+      distance = await _service.getDistanceBetween(start, end);
+    }
     if (!mounted) return null;
     state = state.copyWith(steps: steps, distance: distance);
     final summary = ExerciseSummaryData(
@@ -112,20 +153,30 @@ class StepTrackingController extends StateNotifier<StepTrackingState> {
   }
 
   Future<void> _fetchMetrics() async {
-    final start = _sessionStart;
-    if (start == null) return;
-    final now = DateTime.now();
-    try {
-      final steps = await _service.getStepsBetween(start, now);
-      if (mounted) state = state.copyWith(steps: steps);
-    } catch (_) {
-      // Silently ignore transient Health Connect errors.
-    }
-    try {
-      final distance = await _service.getDistanceBetween(start, now);
-      if (mounted) state = state.copyWith(distance: distance);
-    } catch (_) {
-      // Silently ignore transient Health Connect errors.
+    if (_sessionStart == null) return;
+    if (state.source == StepTrackingSource.sensor) {
+      try {
+        final steps = await _service.getCurrentSensorSteps();
+        final distance = steps * 0.78;
+        if (mounted) state = state.copyWith(steps: steps, distance: distance);
+      } catch (_) {}
+    } else {
+      // 原本 Health Connect 邏輯不變
+      final start = _sessionStart;
+      if (start == null) return;
+      final now = DateTime.now();
+      try {
+        final steps = await _service.getStepsBetween(start, now);
+        if (mounted) state = state.copyWith(steps: steps);
+      } catch (_) {
+        // Silently ignore transient Health Connect errors.
+      }
+      try {
+        final distance = await _service.getDistanceBetween(start, now);
+        if (mounted) state = state.copyWith(distance: distance);
+      } catch (_) {
+        // Silently ignore transient Health Connect errors.
+      }
     }
   }
 
