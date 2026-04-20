@@ -162,7 +162,10 @@ class _StepCountBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final km = (distance / 1000).toStringAsFixed(1);
+    // Show meters below 1 km; switch to kilometres once the threshold is crossed.
+    final distanceLabel = distance < 1000
+        ? '${distance.toStringAsFixed(0)} 公尺'
+        : '${(distance / 1000).toStringAsFixed(1)} 公里';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
@@ -175,7 +178,7 @@ class _StepCountBadge extends StatelessWidget {
           const Text('🚶', style: TextStyle(fontSize: 16)),
           const SizedBox(width: 6),
           Text(
-            '$steps 步  ·  $km 公里',
+            '$steps 步  ·  $distanceLabel',
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,

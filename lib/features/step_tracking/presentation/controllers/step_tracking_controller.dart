@@ -100,7 +100,8 @@ class StepTrackingController extends StateNotifier<StepTrackingState> {
     _timer?.cancel();
     // Fetch immediately, then every 30 s.
     _fetchMetrics();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchMetrics());
+    // Poll Health Connect every 5 s while a session is active so the UI stays responsive.
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) => _fetchMetrics());
     state = state.copyWith(isTracking: true);
   }
 

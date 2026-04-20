@@ -9,10 +9,13 @@ class SessionSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final km = (summary.distanceMeters / 1000).toStringAsFixed(1);
     final dur = summary.duration;
     final minutes = dur.inMinutes;
     final seconds = dur.inSeconds.remainder(60).toString().padLeft(2, '0');
+    // Show meters below 1 km; switch to kilometres once the threshold is crossed.
+    final distanceLabel = summary.distanceMeters < 1000
+        ? '${summary.distanceMeters.toStringAsFixed(0)} 公尺'
+        : '${(summary.distanceMeters / 1000).toStringAsFixed(1)} 公里';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
       decoration: const BoxDecoration(
@@ -59,7 +62,7 @@ class SessionSummaryCard extends StatelessWidget {
               _StatItem(
                 icon: Icons.straighten_rounded,
                 label: '距離',
-                value: '$km 公里',
+                value: distanceLabel,
               ),
             ],
           ),
