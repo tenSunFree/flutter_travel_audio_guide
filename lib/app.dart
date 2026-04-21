@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
-import 'features/audio_guide/presentation/pages/audio_guide_list_page.dart';
+import 'features/home/presentation/pages/main_tab_page.dart';
 
 class TravelAudioGuideApp extends StatelessWidget {
   const TravelAudioGuideApp({super.key});
@@ -9,9 +9,9 @@ class TravelAudioGuideApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'FUNDAY',
+      title: '台北旅遊網',
       theme: AppTheme.light,
-      home: const AudioGuideListPage(),
+      home: const MainTabPage(),
     );
   }
 }

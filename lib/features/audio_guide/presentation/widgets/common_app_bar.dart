@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CommonAppBar({
     super.key,
-    this.title = 'FUNDAY',
+    this.title = '台北旅遊網',
     this.centerTitle,
     this.actions,
   });
