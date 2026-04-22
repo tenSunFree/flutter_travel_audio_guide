@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../audio_guide/presentation/widgets/common_app_bar.dart';
 import '../../domain/entities/activity.dart';
 import '../controllers/activity_list_controller.dart';
+import '../widgets/activity_condition_summary_bar.dart';
+import '../widgets/activity_sort_filter_bottom_sheet.dart';
 import '../widgets/activity_tile.dart';
 import 'activity_detail_page.dart';
 
@@ -28,9 +30,7 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
     if (!_scrollController.hasClients) return;
     const threshold = 240.0;
     final position = _scrollController.position;
-    final shouldLoadMore =
-        position.pixels >= position.maxScrollExtent - threshold;
-    if (shouldLoadMore) {
+    if (position.pixels >= position.maxScrollExtent - threshold) {
       unawaited(ref.read(activityListControllerProvider.notifier).loadMore());
     }
   }
@@ -43,6 +43,38 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
     super.dispose();
   }
 
+  // Enable filtering on the BottomSheet
+  Future<void> _openSortFilter(BuildContext context) async {
+    final state = ref.read(activityListControllerProvider);
+    final result = await showModalBottomSheet<ActivityFilterResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => ActivitySortFilterBottomSheet(
+        initialSortOrder: state.sortOrder,
+        initialStatusFilter: state.statusFilter,
+        initialFeeFilter: state.feeFilter,
+        initialDistric: state.distric,
+        availableDistrics: state.availableDistrics,
+      ),
+    );
+
+    if (result != null) {
+      final (sort, status, fee, distric) = result;
+      ref
+          .read(activityListControllerProvider.notifier)
+          .applySortFilter(
+            sortOrder: sort,
+            statusFilter: status,
+            feeFilter: fee,
+            distric: distric,
+          );
+    }
+  }
+
   void _openDetail(Activity activity) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -51,20 +83,54 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
     );
   }
 
+  // Build
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(activityListControllerProvider);
     final controller = ref.read(activityListControllerProvider.notifier);
+    final isNonDefault = !state.isDefaultFilter;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: const CommonAppBar(title: '活動展演'),
+      appBar: CommonAppBar(
+        title: '活動展演',
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.tune,
+                  color: isNonDefault ? primaryColor : null,
+                ),
+                tooltip: '排序與篩選',
+                onPressed: () => _openSortFilter(context),
+              ),
+              // Red dot: Displayed when there are non-preset conditions
+              if (isNonDefault)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
       body: Builder(
         builder: (context) {
           // Initial loading
-          if (state.isInitialLoading && state.items.isEmpty) {
+          if (state.isInitialLoading && state.allItems.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          // Initial loading failed (list is completely empty)
-          if (state.errorMessage != null && state.items.isEmpty) {
+          // Initial loading failed (no data found)
+          if (state.errorMessage != null && state.allItems.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -86,50 +152,83 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
               ),
             );
           }
-          // Empty data (but no errors)
-          if (!state.isInitialLoading && state.items.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: controller.loadInitial,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 160),
-                  Center(child: Text('目前沒有活動資料')),
-                ],
-              ),
+          // Data exists but is empty after filtering
+          if (!state.isInitialLoading &&
+              state.allItems.isNotEmpty &&
+              state.items.isEmpty) {
+            return Column(
+              children: [
+                ActivityConditionSummaryBar(
+                  sortOrder: state.sortOrder,
+                  statusFilter: state.statusFilter,
+                  feeFilter: state.feeFilter,
+                  distric: state.distric,
+                  isNonDefault: isNonDefault,
+                  onReset: controller.resetSortFilter,
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: controller.loadInitial,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 160),
+                        Center(child: Text('目前沒有符合條件的活動')),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           }
-          // Normal list
+          // ── Normal List
           return RefreshIndicator(
             onRefresh: controller.loadInitial,
             child: Column(
               children: [
+                ActivityConditionSummaryBar(
+                  sortOrder: state.sortOrder,
+                  statusFilter: state.statusFilter,
+                  feeFilter: state.feeFilter,
+                  distric: state.distric,
+                  isNonDefault: isNonDefault,
+                  onReset: controller.resetSortFilter,
+                ),
                 Expanded(
-                  child: ListView.separated(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount:
-                        state.items.length + (state.isLoadingMore ? 1 : 0),
-                    separatorBuilder: (_, __) =>
-                        const Divider(height: 1, color: AppColors.divider),
-                    itemBuilder: (context, index) {
-                      // Last slot: Load more indicators
-                      if (index >= state.items.length) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24),
-                          child: Center(child: CircularProgressIndicator()),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: ListView.separated(
+                      // The key changes with the filter criteria, triggering the AnimatedSwitcher animation.
+                      key: ValueKey(
+                        '${state.sortOrder.name}_'
+                        '${state.statusFilter.name}_'
+                        '${state.feeFilter.name}_'
+                        '${state.distric}',
+                      ),
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount:
+                          state.items.length + (state.isLoadingMore ? 1 : 0),
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, color: AppColors.divider),
+                      itemBuilder: (context, index) {
+                        if (index >= state.items.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 24),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        }
+                        final item = state.items[index];
+                        return ActivityTile(
+                          activity: item,
+                          onTap: () => _openDetail(item),
                         );
-                      }
-                      final item = state.items[index];
-                      return ActivityTile(
-                        activity: item,
-                        onTap: () => _openDetail(item),
-                      );
-                    },
+                      },
+                    ),
                   ),
                 ),
-                // If loading more fails, display an error message at the bottom (the list already contains information).
-                if (state.errorMessage != null && state.items.isNotEmpty)
+                // Load more failed bottom error banners
+                if (state.errorMessage != null && state.allItems.isNotEmpty)
                   Container(
                     width: double.infinity,
                     color: AppColors.errorSurface,
