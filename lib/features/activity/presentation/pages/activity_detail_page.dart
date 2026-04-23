@@ -8,7 +8,11 @@ class ActivityDetailPage extends StatelessWidget {
 
   final Activity activity;
 
-  /// "2026-03-26 00:00:00 +08:00" → "2026/03/26"
+  // The root domain of the travel.taipei website (Note: not the /open-api path of the API)
+  static const String _siteBaseUrl = 'https://www.travel.taipei';
+
+  // Date formatting
+  // "2026-03-26 00:00:00 +08:00" → "2026/03/26"
   static String _formatDate(String raw) {
     if (raw.isEmpty) return '';
     try {
@@ -22,10 +26,58 @@ class ActivityDetailPage extends StatelessWidget {
     }
   }
 
+  // Relative URL → Absolute URL
+  // Handles three cases:
+  // /image/xxx → https://www.travel.taipei/image/xxx
+  // cdn.example.com → https://cdn.example.com
+  // http(s)://... → Preserve as is
+  static String _toAbsoluteUrl(String url) {
+    final t = url.trim();
+    if (t.isEmpty) return t;
+    if (t.startsWith('http://') || t.startsWith('https://')) return t;
+    if (t.startsWith('//')) return 'https:$t';
+    if (t.startsWith('/')) return '$_siteBaseUrl$t';
+    // Other relative paths (for insurance purposes)
+    return '$_siteBaseUrl/$t';
+  }
+
+  // HTML preprocessing
+  // Simultaneously correct the relative paths of <img src> and <a href>,
+  // To prevent images from failing to display and links from becoming unclickable.
+  static String _normalizeHtml(String html) {
+    if (html.isEmpty) return html;
+    // Correct src="..." or src='...'
+    var result = html.replaceAllMapped(
+      RegExp("\\bsrc=([\"'])([^\"']+)\\1", caseSensitive: false),
+      (m) {
+        final quote = m.group(1)!;
+        final url = m.group(2)!;
+        return 'src=$quote${_toAbsoluteUrl(url)}$quote';
+      },
+    );
+    // Correct href="..." or href='...'
+    result = result.replaceAllMapped(
+      RegExp("\\bhref=([\"'])([^\"']+)\\1", caseSensitive: false),
+      (m) {
+        final quote = m.group(1)!;
+        final url = m.group(2)!;
+        if (url.startsWith('#') ||
+            url.startsWith('mailto:') ||
+            url.startsWith('tel:')) {
+          return m.group(0)!;
+        }
+        return 'href=$quote${_toAbsoluteUrl(url)}$quote';
+      },
+    );
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     final beginStr = _formatDate(activity.begin);
     final endStr = _formatDate(activity.end);
+    // Preprocess HTML, complete relative paths
+    final normalizedDescription = _normalizeHtml(activity.description);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -109,9 +161,10 @@ class ActivityDetailPage extends StatelessWidget {
             const SizedBox(height: 20),
             const Divider(color: AppColors.divider),
             const SizedBox(height: 16),
-            // Activity Description: Full HTML Rendering
+            // Activity Description (HTML Rendering)
             HtmlWidget(
-              activity.description,
+              // Use preprocessed HTML
+              normalizedDescription,
               textStyle: const TextStyle(
                 fontSize: 15,
                 height: 1.8,
@@ -142,7 +195,7 @@ class ActivityDetailPage extends StatelessWidget {
   }
 }
 
-// Small widget: Information column
+// Small widget: Information row (icon + label + value)
 class _InfoRow extends StatelessWidget {
   const _InfoRow({
     required this.icon,
@@ -183,8 +236,7 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-// Small widget: Link column (click to open URL — requires the url_launcher kit)
-// This is presented in plain text for now, without including any additional kits.
+// Small components: Connect row
 class _LinkRow extends StatelessWidget {
   const _LinkRow({required this.link});
 

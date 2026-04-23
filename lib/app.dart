@@ -9,7 +9,7 @@ class TravelAudioGuideApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '台北旅遊網',
+      title: '語音導覽',
       theme: AppTheme.light,
       home: const MainTabPage(),
     );
