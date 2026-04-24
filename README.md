@@ -13,13 +13,17 @@ This project is for learning and technical practice.
 ## Preview
 
 <p align="left">
-  <img src="https://i.postimg.cc/3r9BdD7c/368016.jpg" width="220"/>
-  <img src="https://i.postimg.cc/NGb45rYP/368017.jpg" width="220"/>
-  <img src="https://i.postimg.cc/BZ8TQ7YP/368024.jpg" width="220"/>
+  <img src="https://i.postimg.cc/3r9BdD7c/368016.jpg" width="200"/>
+  <img src="https://i.postimg.cc/NGb45rYP/368017.jpg" width="200"/>
+  <img src="https://i.postimg.cc/BZ8TQ7YP/368024.jpg" width="200"/>
 </p> 
 <p align="left">
-  <img src="https://i.postimg.cc/h4Mrf7gC/368019.jpg" width="220"/>
-  <img src="https://i.postimg.cc/FFGZ7Jmq/368023.jpg" width="220"/>
+  <img src="https://i.postimg.cc/h4Mrf7gC/368019.jpg" width="200"/>
+  <img src="https://i.postimg.cc/FFGZ7Jmq/368023.jpg" width="200"/>
+</p> 
+<p align="left">
+  <img src="https://i.postimg.cc/3xfkXH92/368220.jpg" width="200"/>
+  <img src="https://i.postimg.cc/nhSX4tTK/368145.jpg" width="200"/>
 </p> 
 
 ---
