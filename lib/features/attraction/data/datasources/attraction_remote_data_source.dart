@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
-
+import 'package:flutter/cupertino.dart';
 import '../../../../core/error/exceptions.dart';
+import '../models/attraction_model.dart';
 import '../models/attraction_page_model.dart';
 
 class AttractionRemoteDataSource {
@@ -20,26 +21,52 @@ class AttractionRemoteDataSource {
         'page': page,
         if (categoryIds != null && categoryIds.isNotEmpty)
           'categoryIds': categoryIds,
-        if (nlat != null) 'nlat': nlat,
-        if (elong != null) 'elong': elong,
+        'nlat': ?nlat,
+        'elong': ?elong,
       };
-
       final response = await _dio.get<Map<String, dynamic>>(
         '/$lang/Attractions/All',
         queryParameters: query,
       );
-
       if (response.statusCode == 200 && response.data != null) {
         return AttractionPageModel.fromJson(response.data!, page);
       }
-
       if (response.statusCode == 204) {
         return AttractionPageModel(total: 0, page: page, data: const []);
       }
-
       throw ServerException('取得遊憩景點列表失敗：${response.statusCode}');
     } on DioException catch (e) {
       throw ServerException(e.message ?? '取得遊憩景點列表失敗');
+    }
+  }
+
+  // Obtain tourist attraction classification
+  Future<List<AttractionCategoryModel>> getAttractionCategories({
+    required String lang,
+  }) async {
+    try {
+      final response = await _dio.get<dynamic>(
+        '/$lang/Miscellaneous/Categories',
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data;
+        // API response formats may differ; perform security parsing.
+        final rawList = switch (data) {
+          {'data': final List list} => list,
+          {'categories': final List list} => list,
+          final List list => list,
+          _ => const [],
+        };
+        return rawList
+            .whereType<Map<String, dynamic>>()
+            .map(AttractionCategoryModel.fromJson)
+            .where((e) => e.id != 0 && e.name.isNotEmpty)
+            .toList();
+      }
+      return const [];
+    } on DioException catch (e) {
+      debugPrint('AttractionRemoteDataSource, getAttractionCategories, e: ${e.message}');
+      throw ServerException(e.message ?? '取得遊憩景點分類失敗');
     }
   }
 }

@@ -24,5 +24,7 @@ final getAttractionsUseCaseProvider = Provider<GetAttractionsUseCase>((ref) {
 
 final attractionListControllerProvider =
     StateNotifierProvider<AttractionListController, AttractionListState>((ref) {
-      return AttractionListController(ref.watch(getAttractionsUseCaseProvider));
+      return AttractionListController(
+        getAttractionsUseCase: ref.watch(getAttractionsUseCaseProvider),
+      );
     });

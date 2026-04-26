@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../audio_guide/presentation/widgets/common_app_bar.dart';
 import '../../di/attraction_providers.dart';
 import '../../domain/entities/attraction.dart';
+import '../widgets/attraction_condition_summary_bar.dart';
+import '../widgets/attraction_sort_filter_bottom_sheet.dart';
 import '../widgets/attraction_tile.dart';
 import 'attraction_detail_page.dart';
 
@@ -41,6 +43,38 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
     super.dispose();
   }
 
+  Future<void> _openSortFilter(BuildContext context) async {
+    final state = ref.read(attractionListControllerProvider);
+    final result = await showModalBottomSheet<AttractionFilterResult>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => AttractionSortFilterBottomSheet(
+        initialSortOrder: state.sortOrder,
+        initialCategoryIds: state.selectedCategoryIds,
+        initialDistric: state.distric,
+        initialTargets: state.selectedTargets,
+        initialFacilities: state.selectedFacilities,
+        availableCategories: state.availableCategories,
+        availableDistrics: state.availableDistrics,
+      ),
+    );
+    if (result != null) {
+      ref
+          .read(attractionListControllerProvider.notifier)
+          .applySortFilter(
+            sortOrder: result.sortOrder,
+            categoryIds: result.categoryIds,
+            distric: result.distric,
+            targets: result.targets,
+            facilities: result.facilities,
+          );
+    }
+  }
+
   void _openDetail(Attraction attraction) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -53,16 +87,46 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(attractionListControllerProvider);
     final controller = ref.read(attractionListControllerProvider.notifier);
+    final isNonDefault = !state.isDefaultFilter;
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      appBar: const CommonAppBar(title: '遊憩景點'),
+      appBar: CommonAppBar(
+        title: '遊憩景點',
+        actions: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.tune,
+                  color: isNonDefault ? primaryColor : null,
+                ),
+                tooltip: '排序與篩選',
+                onPressed: () => _openSortFilter(context),
+              ),
+              if (isNonDefault)
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
       body: Builder(
         builder: (context) {
-          // Initial Load
-          if (state.isLoading && state.items.isEmpty) {
+          if (state.isLoading && state.allItems.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
-          // Initial error (no data)
-          if (state.errorMessage != null && state.items.isEmpty) {
+          if (state.errorMessage != null && state.allItems.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -84,8 +148,38 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
               ),
             );
           }
-          // Empty state
-          if (!state.isLoading && state.items.isEmpty) {
+          // Data exists but is empty after filtering
+          if (!state.isLoading &&
+              state.allItems.isNotEmpty &&
+              state.items.isEmpty) {
+            return Column(
+              children: [
+                AttractionConditionSummaryBar(
+                  sortOrder: state.sortOrder,
+                  categoryIds: state.selectedCategoryIds,
+                  distric: state.distric,
+                  targets: state.selectedTargets,
+                  facilities: state.selectedFacilities,
+                  availableCategories: state.availableCategories,
+                  isNonDefault: isNonDefault,
+                  onReset: controller.resetSortFilter,
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: controller.refresh,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 160),
+                        Center(child: Text('目前沒有符合條件的景點')),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          if (!state.isLoading && state.allItems.isEmpty) {
             return RefreshIndicator(
               onRefresh: controller.refresh,
               child: ListView(
@@ -97,13 +191,29 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
               ),
             );
           }
-          // Normal List
           return RefreshIndicator(
             onRefresh: controller.refresh,
             child: Column(
               children: [
+                AttractionConditionSummaryBar(
+                  sortOrder: state.sortOrder,
+                  categoryIds: state.selectedCategoryIds,
+                  distric: state.distric,
+                  targets: state.selectedTargets,
+                  facilities: state.selectedFacilities,
+                  availableCategories: state.availableCategories,
+                  isNonDefault: isNonDefault,
+                  onReset: controller.resetSortFilter,
+                ),
                 Expanded(
                   child: ListView.separated(
+                    key: ValueKey(
+                      '${state.sortOrder.name}_'
+                      '${state.selectedCategoryIds.join(",")}_'
+                      '${state.distric}_'
+                      '${state.selectedTargets.map((t) => t.name).join(",")}_'
+                      '${state.selectedFacilities.map((f) => f.name).join(",")}',
+                    ),
                     controller: _scrollController,
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount:
@@ -111,7 +221,6 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
                     separatorBuilder: (_, __) =>
                         const Divider(height: 1, color: AppColors.divider),
                     itemBuilder: (context, index) {
-                      // Load more loading indicators
                       if (index >= state.items.length) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
@@ -126,7 +235,6 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
                     },
                   ),
                 ),
-                // Bottom error banner when loading more failures
                 if (state.errorMessage != null && state.items.isNotEmpty)
                   Container(
                     width: double.infinity,
@@ -135,6 +243,7 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
                     child: Text(
                       state.errorMessage!,
                       style: const TextStyle(color: AppColors.textError),
+                      textAlign: TextAlign.center,
                     ),
                   ),
               ],

@@ -1,5 +1,23 @@
 import '../../domain/entities/attraction.dart';
 
+/// Tag Model (shared by target / friendly)
+class AttractionTagModel {
+  const AttractionTagModel({required this.id, required this.name});
+
+  final int id;
+  final String name;
+
+  factory AttractionTagModel.fromJson(Map<String, dynamic> json) {
+    return AttractionTagModel(
+      id: json['id'] as int? ?? 0,
+      name: json['name'] as String? ?? '',
+    );
+  }
+
+  AttractionTag toEntity() => AttractionTag(id: id, name: name);
+}
+
+/// Category Model
 class AttractionCategoryModel {
   const AttractionCategoryModel({required this.id, required this.name});
 
@@ -16,6 +34,7 @@ class AttractionCategoryModel {
   AttractionCategory toEntity() => AttractionCategory(id: id, name: name);
 }
 
+/// Image Model
 class AttractionImageModel {
   const AttractionImageModel({
     required this.src,
@@ -39,6 +58,7 @@ class AttractionImageModel {
       AttractionImage(src: src, subject: subject, ext: ext);
 }
 
+/// Attraction Model
 class AttractionModel {
   const AttractionModel({
     required this.id,
@@ -57,6 +77,8 @@ class AttractionModel {
     required this.modified,
     required this.url,
     required this.categories,
+    required this.targets,
+    required this.friendlies,
     required this.images,
   });
 
@@ -64,7 +86,7 @@ class AttractionModel {
   final String name;
   final String introduction;
   final String openTime;
-  final String distric; // API typo: distric
+  final String distric;
   final String address;
   final String tel;
   final double? nlat;
@@ -75,14 +97,14 @@ class AttractionModel {
   final String remind;
   final String modified;
   final String url;
-  final List<AttractionCategoryModel> categories;
+  final List<AttractionCategoryModel> categories; // API: category[]
+  final List<AttractionTagModel> targets; // API: target[]
+  final List<AttractionTagModel> friendlies; // API: friendly[]
   final List<AttractionImageModel> images;
 
-  /// The nlat/elong values in the API are sometimes 0 or very small; return them as nullable.
   static double? _toDoubleOrNull(dynamic value) {
     if (value == null) return null;
     final d = value is num ? value.toDouble() : double.tryParse('$value');
-    // Filter out obviously invalid coordinates (excluding Taiwan).
     if (d == null || d <= 1.0) return null;
     return d;
   }
@@ -94,7 +116,6 @@ class AttractionModel {
       introduction: json['introduction'] as String? ?? '',
       openTime: json['open_time'] as String? ?? '',
       distric: json['distric'] as String? ?? '',
-      // API Original Spelling
       address: json['address'] as String? ?? '',
       tel: json['tel'] as String? ?? '',
       nlat: _toDoubleOrNull(json['nlat']),
@@ -108,6 +129,14 @@ class AttractionModel {
       categories: (json['category'] as List? ?? [])
           .whereType<Map<String, dynamic>>()
           .map(AttractionCategoryModel.fromJson)
+          .toList(),
+      targets: (json['target'] as List? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(AttractionTagModel.fromJson)
+          .toList(),
+      friendlies: (json['friendly'] as List? ?? [])
+          .whereType<Map<String, dynamic>>()
+          .map(AttractionTagModel.fromJson)
           .toList(),
       images: (json['images'] as List? ?? [])
           .whereType<Map<String, dynamic>>()
@@ -134,6 +163,8 @@ class AttractionModel {
       modified: modified,
       url: url,
       categories: categories.map((e) => e.toEntity()).toList(),
+      targets: targets.map((e) => e.toEntity()).toList(),
+      friendlies: friendlies.map((e) => e.toEntity()).toList(),
       images: images.map((e) => e.toEntity()).toList(),
     );
   }

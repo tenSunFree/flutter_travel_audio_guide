@@ -1,3 +1,4 @@
+import '../entities/attraction.dart';
 import '../entities/attraction_page.dart';
 
 abstract class AttractionRepository {
@@ -7,5 +8,9 @@ abstract class AttractionRepository {
     String? categoryIds,
     double? nlat,
     double? elong,
+  });
+
+  Future<List<AttractionCategory>> getAttractionCategories({
+    required String lang,
   });
 }
