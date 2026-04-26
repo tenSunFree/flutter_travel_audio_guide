@@ -22,7 +22,8 @@ This project is for learning and technical practice.
   <img src="https://i.postimg.cc/FFGZ7Jmq/368023.jpg" width="200"/>
 </p> 
 <p align="left">
-  <img src="https://i.postimg.cc/3xfkXH92/368220.jpg" width="200"/>
+  <img src="https://i.postimg.cc/GhXQ0grX/368446.jpg" width="200"/>
+  <img src="https://i.postimg.cc/5Ns3cK1B/368412.jpg" width="200"/>
   <img src="https://i.postimg.cc/nhSX4tTK/368145.jpg" width="200"/>
 </p> 
 
