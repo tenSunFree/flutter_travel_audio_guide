@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/utils/app_logger.dart';
 import '../models/attraction_model.dart';
 import '../models/attraction_page_model.dart';
 
@@ -65,7 +66,9 @@ class AttractionRemoteDataSource {
       }
       return const [];
     } on DioException catch (e) {
-      debugPrint('AttractionRemoteDataSource, getAttractionCategories, e: ${e.message}');
+      AppLogger.error(
+        'AttractionRemoteDataSource, getAttractionCategories, e: ${e.message}',
+      );
       throw ServerException(e.message ?? '取得遊憩景點分類失敗');
     }
   }

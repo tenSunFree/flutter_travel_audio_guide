@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/utils/app_log_page.dart';
 import '../../../activity/presentation/pages/activity_list_page.dart';
 import '../../../attraction/presentation/pages/attraction_list_page.dart';
 import '../../../audio_guide/presentation/pages/audio_guide_list_page.dart';
@@ -25,6 +27,17 @@ class _MainTabPageState extends State<MainTabPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
+      floatingActionButton: kDebugMode
+          ? FloatingActionButton(
+              heroTag: 'debug_log',
+              backgroundColor: Colors.red,
+              child: const Icon(Icons.bug_report, color: Colors.white),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AppLogPage()),
+              ),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
