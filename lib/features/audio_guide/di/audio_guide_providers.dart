@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/database/database_provider.dart';
 import '../../../core/network/network_providers.dart';
 import '../data/datasources/audio_guide_local_data_source.dart';
 import '../data/datasources/audio_guide_remote_data_source.dart';
 import '../data/repositories/audio_guide_repository_impl.dart';
 import '../data/services/audio_playback_service_impl.dart';
+import '../domain/entities/audio_guide.dart';
 import '../domain/repositories/audio_guide_repository.dart';
 import '../domain/services/audio_playback_service.dart';
 import '../domain/usecases/download_audio_guide_usecase.dart';
@@ -42,3 +44,7 @@ final audioPlaybackServiceProvider = Provider.autoDispose
       });
       return service;
     });
+
+final audioGuidesStreamProvider = StreamProvider<List<AudioGuide>>((ref) {
+  return ref.watch(appDatabaseProvider).audioGuideDao.watchAll();
+});

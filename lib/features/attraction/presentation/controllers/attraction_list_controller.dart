@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/database/database_provider.dart';
+import '../../../../core/sync/app_sync_service.dart';
+import '../../../../core/sync/sync_providers.dart';
 import '../../domain/entities/attraction.dart';
-import '../../domain/usecases/get_attractions_usecase.dart';
 import '../enums/attraction_sort_filter_enums.dart';
 
 /// State
@@ -40,7 +43,6 @@ class AttractionListState {
   final double? userLat;
   final double? userLng;
 
-  // Derived
   bool get isDefaultFilter =>
       sortOrder == AttractionSortOrder.apiOrder &&
       selectedCategoryIds.isEmpty &&
@@ -48,7 +50,6 @@ class AttractionListState {
       selectedTargets.isEmpty &&
       selectedFacilities.isEmpty;
 
-  /// Administrative Region: Dynamically collects and removes duplicates from allItems.distric
   List<String> get availableDistrics {
     final result =
         allItems
@@ -60,7 +61,6 @@ class AttractionListState {
     return result;
   }
 
-  /// Categories: Dynamically collect and remove duplicates from allItems.categories (preserving the order of first appearance).
   List<AttractionCategory> get availableCategories {
     final seen = <int>{};
     final result = <AttractionCategory>[];
@@ -74,7 +74,6 @@ class AttractionListState {
     return result;
   }
 
-  // Filtering + Sorting (Exact ID Comparison)
   static List<Attraction> computeDisplayItems(
     List<Attraction> source, {
     required AttractionSortOrder sortOrder,
@@ -86,14 +85,11 @@ class AttractionListState {
     double? userLng,
   }) {
     final filtered = source.where((item) {
-      // Category filtering (Any: at least one category is applicable)
       if (selectedCategoryIds.isNotEmpty) {
         final itemCatIds = item.categories.map((c) => c.id).toSet();
         if (!selectedCategoryIds.any(itemCatIds.contains)) return false;
       }
-      // Filter by administrative region (exact match)
       if (distric.isNotEmpty && item.distric.trim() != distric) return false;
-      // Suitable for filtering by ethnic group (Any: at least one apiId of the selected ethnic group appears in target[])
       if (selectedTargets.isNotEmpty) {
         final itemTargetIds = item.targets.map((t) => t.id).toSet();
         final matched = selectedTargets.any(
@@ -101,7 +97,6 @@ class AttractionListState {
         );
         if (!matched) return false;
       }
-      // Friendly facility filter (Any: at least one selected facility's apiId appears in friendly[])
       if (selectedFacilities.isNotEmpty) {
         final itemFriendlyIds = item.friendlies.map((f) => f.id).toSet();
         final matched = selectedFacilities.any(
@@ -111,7 +106,6 @@ class AttractionListState {
       }
       return true;
     }).toList();
-    // Sort
     switch (sortOrder) {
       case AttractionSortOrder.apiOrder:
         break;
@@ -138,19 +132,10 @@ class AttractionListState {
     double? lng,
   ) {
     if (lat == null || lng == null) return double.maxFinite;
-    const r = 6371.0;
-    final dLat = _rad(lat - userLat);
-    final dLng = _rad(lng - userLng);
-    final a =
-        math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(_rad(userLat)) *
-            math.cos(_rad(lat)) *
-            math.sin(dLng / 2) *
-            math.sin(dLng / 2);
-    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    final dlat = userLat - lat;
+    final dlng = userLng - lng;
+    return math.sqrt(dlat * dlat + dlng * dlng);
   }
-
-  static double _rad(double d) => d * math.pi / 180;
 
   AttractionListState copyWith({
     List<Attraction>? allItems,
@@ -161,7 +146,7 @@ class AttractionListState {
     bool? isLoadingMore,
     bool? hasMore,
     String? errorMessage,
-    bool clearError = false,
+    bool clearErrorMessage = false,
     AttractionSortOrder? sortOrder,
     Set<int>? selectedCategoryIds,
     String? distric,
@@ -178,7 +163,9 @@ class AttractionListState {
       isLoading: isLoading ?? this.isLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasMore: hasMore ?? this.hasMore,
-      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
       sortOrder: sortOrder ?? this.sortOrder,
       selectedCategoryIds: selectedCategoryIds ?? this.selectedCategoryIds,
       distric: distric ?? this.distric,
@@ -190,138 +177,116 @@ class AttractionListState {
   }
 }
 
-// Controller
+/// Controller
 class AttractionListController extends StateNotifier<AttractionListState> {
-  AttractionListController({
-    required GetAttractionsUseCase getAttractionsUseCase,
-  }) : _useCase = getAttractionsUseCase,
-       super(const AttractionListState()) {
-    loadInitial();
+  AttractionListController({required this.ref})
+    : super(const AttractionListState()) {
+    _init();
   }
 
-  final GetAttractionsUseCase _useCase;
+  final Ref ref;
+  StreamSubscription<List<Attraction>>? _sub;
 
-  Future<void> loadInitial() async {
-    if (state.isLoading) return;
-    state = state.copyWith(
-      isLoading: true,
-      page: 1,
-      allItems: const [],
-      items: const [],
-      hasMore: true,
-      clearError: true,
-    );
-    try {
-      final result = await _useCase(page: 1);
-      final displayed = AttractionListState.computeDisplayItems(
-        result.data,
-        sortOrder: state.sortOrder,
-        selectedCategoryIds: state.selectedCategoryIds,
-        distric: state.distric,
-        selectedTargets: state.selectedTargets,
-        selectedFacilities: state.selectedFacilities,
-        userLat: state.userLat,
-        userLng: state.userLng,
-      );
-      state = state.copyWith(
-        allItems: result.data,
-        items: displayed,
-        total: result.total,
-        page: 1,
-        hasMore: result.data.length < result.total,
-        isLoading: false,
-        clearError: true,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoading: false, errorMessage: e.toString());
-    }
+  void _init() {
+    // Listening to the database → Displaying data immediately upon availability
+    _sub = ref
+        .read(appDatabaseProvider)
+        .attractionDao
+        .watchAll()
+        .listen(_onData);
+    // Background synchronization, does not obstruct UI
+    Future.microtask(() async {
+      try {
+        await ref.read(appSyncServiceProvider).syncAllIfNeeded();
+      } catch (_) {}
+    });
   }
 
-  Future<void> loadMore() async {
-    if (state.isLoading || state.isLoadingMore || !state.hasMore) return;
-    state = state.copyWith(isLoadingMore: true, clearError: true);
-    try {
-      final nextPage = state.page + 1;
-      final result = await _useCase(page: nextPage);
-      final merged = [...state.allItems, ...result.data];
-      final displayed = AttractionListState.computeDisplayItems(
-        merged,
-        sortOrder: state.sortOrder,
-        selectedCategoryIds: state.selectedCategoryIds,
-        distric: state.distric,
-        selectedTargets: state.selectedTargets,
-        selectedFacilities: state.selectedFacilities,
-        userLat: state.userLat,
-        userLng: state.userLng,
-      );
-      state = state.copyWith(
-        allItems: merged,
-        items: displayed,
-        total: result.total,
-        page: nextPage,
-        hasMore: merged.length < result.total,
-        isLoadingMore: false,
-        clearError: true,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoadingMore: false, errorMessage: e.toString());
-    }
-  }
-
-  void applySortFilter({
-    required AttractionSortOrder sortOrder,
-    required Set<int> categoryIds,
-    required String distric,
-    required Set<AttractionTargetFilter> targets,
-    required Set<AttractionFacilityFilter> facilities,
-  }) {
-    final displayed = AttractionListState.computeDisplayItems(
-      state.allItems,
-      sortOrder: sortOrder,
-      selectedCategoryIds: categoryIds,
-      distric: distric,
-      selectedTargets: targets,
-      selectedFacilities: facilities,
+  void _onData(List<Attraction> all) {
+    final filtered = AttractionListState.computeDisplayItems(
+      all,
+      sortOrder: state.sortOrder,
+      selectedCategoryIds: state.selectedCategoryIds,
+      distric: state.distric,
+      selectedTargets: state.selectedTargets,
+      selectedFacilities: state.selectedFacilities,
       userLat: state.userLat,
       userLng: state.userLng,
     );
     state = state.copyWith(
-      sortOrder: sortOrder,
-      selectedCategoryIds: categoryIds,
-      distric: distric,
-      selectedTargets: targets,
-      selectedFacilities: facilities,
-      items: displayed,
+      allItems: all,
+      items: filtered,
+      total: all.length,
+      isLoading: false,
+      clearErrorMessage: true,
     );
   }
 
-  void resetSortFilter() {
-    applySortFilter(
-      sortOrder: AttractionSortOrder.apiOrder,
-      categoryIds: const {},
-      distric: '',
-      targets: const {},
-      facilities: const {},
-    );
-  }
-
-  void setUserLocation(double lat, double lng) {
-    if (state.sortOrder == AttractionSortOrder.distanceAsc) {
-      final displayed = AttractionListState.computeDisplayItems(
-        state.allItems,
-        sortOrder: state.sortOrder,
-        selectedCategoryIds: state.selectedCategoryIds,
-        distric: state.distric,
-        selectedTargets: state.selectedTargets,
-        selectedFacilities: state.selectedFacilities,
-        userLat: lat,
-        userLng: lng,
-      );
-      state = state.copyWith(userLat: lat, userLng: lng, items: displayed);
-    } else {
-      state = state.copyWith(userLat: lat, userLng: lng);
+  // Pull-to-refresh: Force update from API
+  Future<void> refresh() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      await ref.read(appSyncServiceProvider).forceSync(SyncTarget.attractions);
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
   }
 
-  Future<void> refresh() => loadInitial();
+  // Page calls loadInitial / loadMore → backward compatibility
+  Future<void> loadInitial() => refresh();
+
+  Future<void> loadMore() async {}
+
+  void applySortFilter({
+    AttractionSortOrder? sortOrder,
+    Set<int>? categoryIds,
+    String? distric,
+    Set<AttractionTargetFilter>? targets,
+    Set<AttractionFacilityFilter>? facilities,
+  }) {
+    final s = sortOrder ?? state.sortOrder;
+    final c = categoryIds ?? state.selectedCategoryIds;
+    final d = distric ?? state.distric;
+    final t = targets ?? state.selectedTargets;
+    final f = facilities ?? state.selectedFacilities;
+    state = state.copyWith(
+      sortOrder: s,
+      selectedCategoryIds: c,
+      distric: d,
+      selectedTargets: t,
+      selectedFacilities: f,
+      items: AttractionListState.computeDisplayItems(
+        state.allItems,
+        sortOrder: s,
+        selectedCategoryIds: c,
+        distric: d,
+        selectedTargets: t,
+        selectedFacilities: f,
+        userLat: state.userLat,
+        userLng: state.userLng,
+      ),
+    );
+  }
+
+  void resetSortFilter() => applySortFilter(
+    sortOrder: AttractionSortOrder.apiOrder,
+    categoryIds: {},
+    distric: '',
+    targets: {},
+    facilities: {},
+  );
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 }
+
+/// Provider
+final attractionListControllerProvider =
+    StateNotifierProvider<AttractionListController, AttractionListState>((ref) {
+      return AttractionListController(ref: ref);
+    });

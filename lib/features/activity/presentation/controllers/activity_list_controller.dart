@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/api_constants.dart';
-import '../../di/activity_providers.dart';
+import '../../../../core/database/database_provider.dart';
+import '../../../../core/sync/app_sync_service.dart';
+import '../../../../core/sync/sync_providers.dart';
 import '../../domain/entities/activity.dart';
-import '../../domain/usecases/get_activities_usecase.dart';
 import '../enums/activity_sort_filter_enums.dart';
 
 /// State
@@ -171,83 +172,53 @@ class ActivityListState {
 
 /// Controller
 class ActivityListController extends StateNotifier<ActivityListState> {
-  ActivityListController({required GetActivitiesUseCase getActivitiesUseCase})
-    : _getActivitiesUseCase = getActivitiesUseCase,
-      super(ActivityListState.initial()) {
-    loadInitial();
+  ActivityListController({required this.ref})
+    : super(ActivityListState.initial()) {
+    _init();
   }
 
-  final GetActivitiesUseCase _getActivitiesUseCase;
+  final Ref ref;
+  StreamSubscription<List<Activity>>? _sub;
+
+  void _init() {
+    _sub = ref.read(appDatabaseProvider).activityDao.watchAll().listen(_onData);
+
+    Future.microtask(() async {
+      try {
+        await ref.read(appSyncServiceProvider).syncAllIfNeeded();
+      } catch (_) {}
+    });
+  }
+
+  void _onData(List<Activity> all) {
+    state = state.copyWith(
+      allItems: all,
+      items: ActivityListState.computeDisplayItems(
+        all,
+        state.sortOrder,
+        state.statusFilter,
+        state.feeFilter,
+        state.distric,
+      ),
+      total: all.length,
+      isInitialLoading: false,
+      clearErrorMessage: true,
+    );
+  }
 
   Future<void> loadInitial() async {
-    if (state.isInitialLoading) return;
-    state = state.copyWith(
-      isInitialLoading: true,
-      clearErrorMessage: true,
-      allItems: [],
-      items: [],
-      currentPage: 0,
-      total: 0,
-      hasMore: true,
-    );
+    state = state.copyWith(isInitialLoading: true);
     try {
-      final page = await _getActivitiesUseCase(
-        lang: ApiConstants.defaultLang,
-        page: 1,
-      );
-      final newAllItems = page.items;
-      state = state.copyWith(
-        allItems: newAllItems,
-        items: ActivityListState.computeDisplayItems(
-          newAllItems,
-          state.sortOrder,
-          state.statusFilter,
-          state.feeFilter,
-          state.distric,
-        ),
-        currentPage: 1,
-        total: page.total,
-        hasMore: page.hasMore,
-        isInitialLoading: false,
-      );
+      await ref.read(appSyncServiceProvider).forceSync(SyncTarget.activities);
     } catch (e) {
-      state = state.copyWith(
-        isInitialLoading: false,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(errorMessage: e.toString());
+    } finally {
+      state = state.copyWith(isInitialLoading: false);
     }
   }
 
-  Future<void> loadMore() async {
-    if (state.isInitialLoading || state.isLoadingMore || !state.hasMore) return;
-    state = state.copyWith(isLoadingMore: true, clearErrorMessage: true);
-    try {
-      final nextPage = state.currentPage + 1;
-      final page = await _getActivitiesUseCase(
-        lang: ApiConstants.defaultLang,
-        page: nextPage,
-      );
-      final newAllItems = [...state.allItems, ...page.items];
-      state = state.copyWith(
-        allItems: newAllItems,
-        items: ActivityListState.computeDisplayItems(
-          newAllItems,
-          state.sortOrder,
-          state.statusFilter,
-          state.feeFilter,
-          state.distric,
-        ),
-        currentPage: nextPage,
-        total: page.total,
-        hasMore: page.hasMore,
-        isLoadingMore: false,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoadingMore: false, errorMessage: e.toString());
-    }
-  }
+  Future<void> loadMore() async {}
 
-  /// Apply filter criteria
   void applySortFilter({
     required ActivitySortOrder sortOrder,
     required ActivityStatusFilter statusFilter,
@@ -269,7 +240,6 @@ class ActivityListController extends StateNotifier<ActivityListState> {
     );
   }
 
-  /// Reset to default value
   void resetSortFilter() {
     applySortFilter(
       sortOrder: ActivitySortOrder.beginAsc,
@@ -278,12 +248,16 @@ class ActivityListController extends StateNotifier<ActivityListState> {
       distric: '',
     );
   }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
 }
 
 /// Provider
 final activityListControllerProvider =
     StateNotifierProvider<ActivityListController, ActivityListState>((ref) {
-      return ActivityListController(
-        getActivitiesUseCase: ref.watch(getActivitiesUseCaseProvider),
-      );
+      return ActivityListController(ref: ref);
     });

@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/api_constants.dart';
+import '../../../../core/database/database_provider.dart';
+import '../../../../core/sync/app_sync_service.dart';
+import '../../../../core/sync/sync_providers.dart';
 import '../../di/audio_guide_providers.dart';
 import '../../domain/entities/audio_guide.dart';
-import '../enums/sort_filter_enums.dart';
 import '../../domain/usecases/download_audio_guide_usecase.dart';
-import '../../domain/usecases/get_audio_guides_usecase.dart';
+import '../enums/sort_filter_enums.dart';
 
+/// State
 class AudioGuideListState {
   const AudioGuideListState({
     required this.allItems,
@@ -37,12 +40,8 @@ class AudioGuideListState {
     );
   }
 
-  /// Raw items from server (unfiltered, unsorted).
   final List<AudioGuide> allItems;
-
-  /// Display-ready items after applying [sortOrder] and [filterType].
   final List<AudioGuide> items;
-
   final int currentPage;
   final int total;
   final bool hasMore;
@@ -63,12 +62,10 @@ class AudioGuideListState {
   ) {
     final filtered = switch (filter) {
       FilterType.all => [...rawItems],
-      FilterType.downloaded =>
-        rawItems.where((g) => g.isDownloaded).toList(),
+      FilterType.downloaded => rawItems.where((g) => g.isDownloaded).toList(),
       FilterType.notDownloaded =>
         rawItems.where((g) => !g.isDownloaded).toList(),
     };
-
     switch (sort) {
       case SortOrder.dateNewest:
         filtered.sort((a, b) => b.modified.compareTo(a.modified));
@@ -81,7 +78,6 @@ class AudioGuideListState {
           (a, b) => (b.isDownloaded ? 1 : 0) - (a.isDownloaded ? 1 : 0),
         );
     }
-
     return filtered;
   }
 
@@ -108,149 +104,115 @@ class AudioGuideListState {
       isInitialLoading: isInitialLoading ?? this.isInitialLoading,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       downloadingIds: downloadingIds ?? this.downloadingIds,
-      errorMessage:
-          clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
       sortOrder: sortOrder ?? this.sortOrder,
       filterType: filterType ?? this.filterType,
     );
   }
 }
 
+/// Controller
 class AudioGuideListController extends StateNotifier<AudioGuideListState> {
   AudioGuideListController({
-    required GetAudioGuidesUseCase getAudioGuidesUseCase,
+    required this.ref,
     required DownloadAudioGuideUseCase downloadAudioGuideUseCase,
-  })  : _getAudioGuidesUseCase = getAudioGuidesUseCase,
-        _downloadAudioGuideUseCase = downloadAudioGuideUseCase,
-        super(AudioGuideListState.initial()) {
-    loadInitial();
+  }) : _downloadAudioGuideUseCase = downloadAudioGuideUseCase,
+       super(AudioGuideListState.initial()) {
+    _init();
   }
 
-  final GetAudioGuidesUseCase _getAudioGuidesUseCase;
+  final Ref ref;
   final DownloadAudioGuideUseCase _downloadAudioGuideUseCase;
+  StreamSubscription<List<AudioGuide>>? _sub;
 
+  void _init() {
+    _sub = ref
+        .read(appDatabaseProvider)
+        .audioGuideDao
+        .watchAll()
+        .listen(_onData);
+    Future.microtask(() async {
+      try {
+        await ref.read(appSyncServiceProvider).syncAllIfNeeded();
+      } catch (_) {}
+    });
+  }
+
+  void _onData(List<AudioGuide> all) {
+    state = state.copyWith(
+      allItems: all,
+      items: AudioGuideListState.computeDisplayItems(
+        all,
+        state.sortOrder,
+        state.filterType,
+      ),
+      total: all.length,
+      isInitialLoading: false,
+      clearErrorMessage: true,
+    );
+  }
+
+  // Pull-to-refresh
   Future<void> loadInitial() async {
-    if (state.isInitialLoading) return;
-    state = state.copyWith(
-      isInitialLoading: true,
-      clearErrorMessage: true,
-      currentPage: 0,
-      allItems: [],
-      items: [],
-      total: 0,
-      hasMore: true,
-    );
+    state = state.copyWith(isInitialLoading: true);
     try {
-      final page = await _getAudioGuidesUseCase(
-        lang: ApiConstants.defaultLang,
-        page: 1,
-      );
-      final newAllItems = page.items;
-      state = state.copyWith(
-        allItems: newAllItems,
-        items: AudioGuideListState.computeDisplayItems(
-          newAllItems,
-          state.sortOrder,
-          state.filterType,
-        ),
-        currentPage: 1,
-        total: page.total,
-        hasMore: page.hasMore,
-        isInitialLoading: false,
-      );
+      await ref.read(appSyncServiceProvider).forceSync(SyncTarget.audioGuides);
     } catch (e) {
-      state = state.copyWith(
-        isInitialLoading: false,
-        errorMessage: e.toString(),
-      );
-    }
-  }
-
-  Future<void> loadMore() async {
-    if (state.isInitialLoading || state.isLoadingMore || !state.hasMore) return;
-    state = state.copyWith(isLoadingMore: true, clearErrorMessage: true);
-    try {
-      final nextPage = state.currentPage + 1;
-      final page = await _getAudioGuidesUseCase(
-        lang: ApiConstants.defaultLang,
-        page: nextPage,
-      );
-      final newAllItems = [...state.allItems, ...page.items];
-      state = state.copyWith(
-        allItems: newAllItems,
-        items: AudioGuideListState.computeDisplayItems(
-          newAllItems,
-          state.sortOrder,
-          state.filterType,
-        ),
-        currentPage: nextPage,
-        total: page.total,
-        hasMore: page.hasMore,
-        isLoadingMore: false,
-      );
-    } catch (e) {
-      state = state.copyWith(isLoadingMore: false, errorMessage: e.toString());
-    }
-  }
-
-  Future<String?> downloadGuide(AudioGuide guide) async {
-    if (state.downloadingIds.contains(guide.id)) {
-      return '該檔案正在下載中';
-    }
-    final nextDownloadingIds = {...state.downloadingIds, guide.id};
-    state = state.copyWith(
-      downloadingIds: nextDownloadingIds,
-      clearErrorMessage: true,
-    );
-    try {
-      final localPath = await _downloadAudioGuideUseCase(guide);
-
-      final updatedAllItems = [...state.allItems];
-      final allIndex = updatedAllItems.indexWhere((e) => e.id == guide.id);
-      if (allIndex != -1) {
-        updatedAllItems[allIndex] = updatedAllItems[allIndex].copyWith(
-          isDownloaded: true,
-          localFilePath: localPath,
-        );
-      }
-      state = state.copyWith(
-        allItems: updatedAllItems,
-        items: AudioGuideListState.computeDisplayItems(
-          updatedAllItems,
-          state.sortOrder,
-          state.filterType,
-        ),
-      );
-      return null;
-    } catch (e) {
-      return e.toString();
+      state = state.copyWith(errorMessage: e.toString());
     } finally {
-      final afterDownloadingIds = {...state.downloadingIds}..remove(guide.id);
-      state = state.copyWith(downloadingIds: afterDownloadingIds);
+      state = state.copyWith(isInitialLoading: false);
     }
   }
 
-  void applySortFilter(SortOrder sortOrder, FilterType filterType) {
+  Future<void> loadMore() async {}
+
+  void applySortFilter(SortOrder sort, FilterType filter) {
     state = state.copyWith(
-      sortOrder: sortOrder,
-      filterType: filterType,
+      sortOrder: sort,
+      filterType: filter,
       items: AudioGuideListState.computeDisplayItems(
         state.allItems,
-        sortOrder,
-        filterType,
+        sort,
+        filter,
       ),
     );
   }
 
-  void resetSortFilter() {
-    applySortFilter(SortOrder.dateNewest, FilterType.all);
+  void resetSortFilter() =>
+      applySortFilter(SortOrder.dateNewest, FilterType.all);
+
+  // download
+  Future<String?> downloadGuide(AudioGuide guide) async {
+    state = state.copyWith(downloadingIds: {...state.downloadingIds, guide.id});
+    try {
+      final localPath = await _downloadAudioGuideUseCase(guide);
+      await ref
+          .read(appDatabaseProvider)
+          .audioGuideDao
+          .markAsDownloaded(id: guide.id, localFilePath: localPath);
+      return null;
+    } catch (e) {
+      return e.toString();
+    } finally {
+      final ids = {...state.downloadingIds}..remove(guide.id);
+      state = state.copyWith(downloadingIds: ids);
+    }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 }
 
+/// Provider
 final audioGuideListControllerProvider =
     StateNotifierProvider<AudioGuideListController, AudioGuideListState>((ref) {
-  return AudioGuideListController(
-    getAudioGuidesUseCase: ref.watch(getAudioGuidesUseCaseProvider),
-    downloadAudioGuideUseCase: ref.watch(downloadAudioGuideUseCaseProvider),
-  );
-});
+      return AudioGuideListController(
+        ref: ref,
+        downloadAudioGuideUseCase: ref.watch(downloadAudioGuideUseCaseProvider),
+      );
+    });

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import '../constants/api_constants.dart';
 import '../utils/app_logger.dart';
+import 'dio_log_filter.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   final dio = Dio(
@@ -22,6 +23,9 @@ final dioProvider = Provider<Dio>((ref) {
         printResponseHeaders: false,
         // Complete response body, without truncation
         printResponseData: true,
+        requestFilter: DioLogFilter.shouldLogRequest,
+        responseFilter: DioLogFilter.shouldLogResponse,
+        errorFilter: DioLogFilter.shouldLogError,
       ),
     ),
   );

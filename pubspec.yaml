@@ -39,22 +39,25 @@ dependencies:
   talker_flutter: ^4.6.1
   talker_dio_logger: ^4.6.1
   talker_riverpod_logger: ^4.6.1
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  drift: ^2.31.0
+  drift_flutter: ^0.2.8
+  # Android/iOS required
+  sqlite3_flutter_libs: ^0.5.42
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  pigeon: ^22.6.0
+  pigeon: ^26.3.4
+  drift_dev: ^2.31.0
+  build_runner: ^2.14.1
+  # Objective-C was originally indirectly pulled into version 9.3.0 by PathProviderFoundation.
+  # This version depends on the Hooks suite, causing Dart Compile to throw an error in the build runner.
+  # Downgrade to a version without Hooks to resolve the issue.
+  objective_c: ^9.1.0
+  # native_toolchain_c also indirectly introduces hooks, and downgrades them accordingly.
+  native_toolchain_c: 0.13.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
