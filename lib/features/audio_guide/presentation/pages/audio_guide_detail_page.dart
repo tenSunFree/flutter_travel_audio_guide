@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
 import '../../../../core/constants/app_colors.dart';
+import '../../../attraction/di/attraction_providers.dart';
+import '../../../attraction/domain/entities/attraction.dart';
 import '../../../step_tracking/di/step_tracking_providers.dart';
 import '../../../step_tracking/presentation/widgets/session_summary_card.dart';
 import '../../domain/entities/audio_guide.dart';
 import '../../domain/entities/audio_playback_state.dart';
 import '../controllers/audio_player_controller.dart';
 import '../widgets/common_app_bar.dart';
+import '../widgets/guide_image_section.dart';
+import '../widgets/playback_card.dart';
+import '../widgets/practical_info_section.dart';
+import '../widgets/introduction_section.dart';
+import '../widgets/step_count_badge.dart';
 
 class AudioGuideDetailPage extends ConsumerStatefulWidget {
   const AudioGuideDetailPage({super.key, required this.guide});
@@ -25,167 +31,127 @@ class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
     final localPath = widget.guide.localFilePath;
     if (localPath == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('FUNDAY')),
+        appBar: CommonAppBar(title: widget.guide.title),
         body: const Center(child: Text('找不到本地音訊檔')),
       );
     }
+    final attractionAsync = ref.watch(attractionsStreamProvider);
+    final Attraction? attraction = _resolveAttraction(attractionAsync);
+    final pageTitle = attraction?.name ?? widget.guide.title;
     final playerState = ref.watch(audioPlayerControllerProvider(localPath));
     final controller = ref.read(
       audioPlayerControllerProvider(localPath).notifier,
     );
     final stepState = ref.watch(stepTrackingControllerProvider);
     final stepController = ref.read(stepTrackingControllerProvider.notifier);
-    // Notify step tracking controller on play/pause/complete transitions.
     ref.listen(audioPlayerControllerProvider(localPath), (previous, next) {
       if (next.isPlaying && !(previous?.isPlaying ?? false)) {
-        stepController.onPlaybackStarted(widget.guide.title);
+        stepController.onPlaybackStarted(pageTitle);
       } else if (!next.isPlaying && (previous?.isPlaying ?? false)) {
-        // Check if this is a completion event (stopped at end of track).
-        if (next.status == AudioPlaybackStatus.stopped &&
+        final isCompleted =
+            next.status == AudioPlaybackStatus.stopped &&
             next.duration > Duration.zero &&
-            next.position >= next.duration) {
-          _onGuideCompleted(context, localPath);
+            next.position >= next.duration;
+        if (isCompleted) {
+          _onGuideCompleted(context);
         } else {
           stepController.onPlaybackPaused();
         }
       }
     });
     return Scaffold(
-      appBar: const CommonAppBar(),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                p.basename(localPath),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 32),
-              GestureDetector(
-                onTap: playerState.isReady ? controller.togglePlayPause : null,
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: const BoxDecoration(
-                    color: AppColors.surfaceMuted,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    playerState.isPlaying
-                        ? Icons.pause_rounded
-                        : Icons.play_arrow_rounded,
-                    size: 40,
-                    color: AppColors.iconPrimary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                '${_formatDuration(playerState.position)} / ${_formatDuration(playerState.duration)}',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textCaption,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (playerState.duration > Duration.zero)
-                SizedBox(
-                  width: 260,
-                  child: Slider(
-                    value: playerState.position.inMilliseconds
-                        .clamp(0, playerState.duration.inMilliseconds)
-                        .toDouble(),
-                    max: playerState.duration.inMilliseconds.toDouble(),
-                    onChanged: (value) {
-                      controller.seek(Duration(milliseconds: value.toInt()));
-                    },
-                  ),
-                ),
-              if (playerState.errorMessage != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  playerState.errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ],
-              // Step count (Android + Health Connect only)
-              if (stepState.isAvailable &&
-                  stepState.hasHealthConnectPermission &&
-                  stepState.hasSensorPermission) ...[
-                const SizedBox(height: 24),
-                _StepCountBadge(
-                  steps: stepState.steps,
-                  distance: stepState.distance,
-                ),
-              ],
-            ],
+      appBar: CommonAppBar(title: pageTitle),
+      body: ListView(
+        children: [
+          GuideImageSection(attraction: attraction),
+          PlaybackCard(
+            title: pageTitle,
+            playerState: playerState,
+            onTogglePlayPause: playerState.isReady
+                ? controller.togglePlayPause
+                : null,
+            onSeek: controller.seek,
           ),
-        ),
+          PracticalInfoSection(attraction: attraction),
+          if (stepState.isAvailable &&
+              stepState.hasHealthConnectPermission &&
+              stepState.hasSensorPermission)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: StepCountBadge(
+                steps: stepState.steps,
+                distance: stepState.distance,
+              ),
+            ),
+          IntroductionSection(
+            pageTitle: pageTitle,
+            text: _resolveIntroduction(attraction, widget.guide),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '資料來源：台北旅遊網',
+                  style: TextStyle(fontSize: 12, color: AppColors.textHint),
+                ),
+                if (widget.guide.modified.isNotEmpty)
+                  Text(
+                    '音訊更新：${widget.guide.modified.split(' ').first}',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textHint,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
 
-  Future<void> _onGuideCompleted(BuildContext context, String localPath) async {
+  Attraction? _resolveAttraction(AsyncValue<List<Attraction>> async) {
+    final all = async.valueOrNull ?? const <Attraction>[];
+    final matched = all
+        .where((item) => _isSamePlace(item.name, widget.guide.title))
+        .toList();
+    return matched.isNotEmpty ? matched.first : null;
+  }
+
+  bool _isSamePlace(String attractionName, String guideTitle) {
+    final a = _normalize(attractionName);
+    final g = _normalize(guideTitle);
+    return a.isNotEmpty && g.isNotEmpty && (g.contains(a) || a.contains(g));
+  }
+
+  String _normalize(String value) => value
+      .replaceAll('.mp3', '')
+      .replaceAll('語音導覽', '')
+      .replaceAll('導覽', '')
+      .replaceAll(RegExp(r'\s+'), '')
+      .trim();
+
+  String _resolveIntroduction(Attraction? attraction, AudioGuide guide) {
+    final intro = attraction?.introduction.trim() ?? '';
+    if (intro.isNotEmpty) return intro;
+    final summary = guide.summary?.trim() ?? '';
+    if (summary.isNotEmpty) return summary;
+    return '目前沒有景點介紹';
+  }
+
+  Future<void> _onGuideCompleted(BuildContext context) async {
     final stepController = ref.read(stepTrackingControllerProvider.notifier);
     final summary = await stepController.onPlaybackCompleted();
     if (summary == null || !context.mounted) return;
-    await showModalBottomSheet(
+    await showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => SessionSummaryCard(summary: summary),
-    );
-  }
-
-  static String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$minutes:$seconds';
-  }
-}
-
-class _StepCountBadge extends StatelessWidget {
-  const _StepCountBadge({required this.steps, required this.distance});
-
-  final int steps;
-  final double distance;
-
-  @override
-  Widget build(BuildContext context) {
-    // Show meters below 1 km; switch to kilometres once the threshold is crossed.
-    final distanceLabel = distance < 1000
-        ? '${distance.toStringAsFixed(0)} 公尺'
-        : '${(distance / 1000).toStringAsFixed(1)} 公里';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('🚶', style: TextStyle(fontSize: 16)),
-          const SizedBox(width: 6),
-          Text(
-            '$steps 步  ·  $distanceLabel',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
