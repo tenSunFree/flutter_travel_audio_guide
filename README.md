@@ -15,7 +15,8 @@ This project is for learning and technical practice.
 <p align="left">
   <img src="https://i.postimg.cc/3r9BdD7c/368016.jpg" width="200"/>
   <img src="https://i.postimg.cc/NGb45rYP/368017.jpg" width="200"/>
-  <img src="https://i.postimg.cc/BZ8TQ7YP/368024.jpg" width="200"/>
+  <img src="https://i.postimg.cc/sXV7TMt1/Screenshot-20260501-151642.png" width="200"/>
+  <img src="https://i.postimg.cc/KzJLwZ24/Screenshot-20260501-151730.png" width="200"/>
 </p> 
 <p align="left">
   <img src="https://i.postimg.cc/h4Mrf7gC/368019.jpg" width="200"/>
