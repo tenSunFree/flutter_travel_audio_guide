@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/list_skeleton.dart';
 import '../../domain/entities/audio_guide.dart';
 import '../enums/sort_filter_enums.dart';
 import '../controllers/audio_guide_list_controller.dart';
@@ -108,8 +109,20 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
       ),
       body: Builder(
         builder: (context) {
-          if (state.isInitialLoading && state.items.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+          if (state.allItems.isEmpty && state.isSyncing) {
+            return const ListSkeleton(itemCount: 8, itemHeight: 84);
+          }
+          if (state.allItems.isEmpty && !state.isSyncing) {
+            return RefreshIndicator(
+              onRefresh: controller.loadInitial,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text('暫無語音導覽資料')),
+                ],
+              ),
+            );
           }
           if (state.errorMessage != null && state.items.isEmpty) {
             return Center(
@@ -163,10 +176,10 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
                         final guide = state.items[index];
                         return AudioGuideTile(
                           guide: guide,
-                          isDownloading:
-                              state.downloadingIds.contains(guide.id),
-                          onActionPressed: () =>
-                              _handleAction(context, guide),
+                          isDownloading: state.downloadingIds.contains(
+                            guide.id,
+                          ),
+                          onActionPressed: () => _handleAction(context, guide),
                         );
                       },
                     ),
@@ -200,8 +213,9 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
         .downloadGuide(guide);
     if (!mounted) return;
     if (error != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
       return;
     }
     final latestState = ref.read(audioGuideListControllerProvider);
@@ -210,8 +224,9 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
       orElse: () => guide,
     );
     if (latestGuide.localFilePath != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('下載完成')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('下載完成')));
     }
   }
 
@@ -223,4 +238,3 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     );
   }
 }
-

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/list_skeleton.dart';
 import '../../../audio_guide/presentation/widgets/common_app_bar.dart';
 import '../../domain/entities/activity.dart';
 import '../controllers/activity_list_controller.dart';
@@ -61,7 +62,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
         availableDistrics: state.availableDistrics,
       ),
     );
-
     if (result != null) {
       final (sort, status, fee, distric) = result;
       ref
@@ -125,9 +125,22 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
       ),
       body: Builder(
         builder: (context) {
-          // Initial loading
-          if (state.isInitialLoading && state.allItems.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+          // Skeleton screen: No local data + still syncing to the network
+          if (state.allItems.isEmpty && state.isSyncing) {
+            return const ListSkeleton(itemCount: 8, itemHeight: 88);
+          }
+          // No data available: No data found locally after sync is complete
+          if (state.allItems.isEmpty && !state.isSyncing) {
+            return RefreshIndicator(
+              onRefresh: controller.loadInitial,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text('暫無活動資料')),
+                ],
+              ),
+            );
           }
           // Initial loading failed (no data found)
           if (state.errorMessage != null && state.allItems.isEmpty) {

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/list_skeleton.dart';
 import '../../../audio_guide/presentation/widgets/common_app_bar.dart';
 import '../../di/attraction_providers.dart';
 import '../../domain/entities/attraction.dart';
@@ -123,8 +124,24 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
       ),
       body: Builder(
         builder: (context) {
-          if (state.isLoading && state.allItems.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+          if (state.allItems.isEmpty && (state.isSyncing ?? true)) {
+            return const ListSkeleton(
+              itemCount: 7,
+              itemHeight: 100,
+              hasLeadingBox: true,
+            );
+          }
+          if (state.allItems.isEmpty && !(state.isSyncing ?? true)) {
+            return RefreshIndicator(
+              onRefresh: controller.refresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [
+                  SizedBox(height: 200),
+                  Center(child: Text('暫無景點資料')),
+                ],
+              ),
+            );
           }
           if (state.errorMessage != null && state.allItems.isEmpty) {
             return Center(

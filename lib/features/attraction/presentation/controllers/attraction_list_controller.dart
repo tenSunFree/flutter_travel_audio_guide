@@ -25,6 +25,7 @@ class AttractionListState {
     this.selectedFacilities = const {},
     this.userLat,
     this.userLng,
+    this.isSyncing,
   });
 
   final List<Attraction> allItems;
@@ -42,6 +43,7 @@ class AttractionListState {
   final Set<AttractionFacilityFilter> selectedFacilities;
   final double? userLat;
   final double? userLng;
+  final bool? isSyncing; // Is background synchronization in progress
 
   bool get isDefaultFilter =>
       sortOrder == AttractionSortOrder.apiOrder &&
@@ -154,6 +156,7 @@ class AttractionListState {
     Set<AttractionFacilityFilter>? selectedFacilities,
     double? userLat,
     double? userLng,
+    bool? isSyncing,
   }) {
     return AttractionListState(
       allItems: allItems ?? this.allItems,
@@ -173,6 +176,7 @@ class AttractionListState {
       selectedFacilities: selectedFacilities ?? this.selectedFacilities,
       userLat: userLat ?? this.userLat,
       userLng: userLng ?? this.userLng,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 }
@@ -198,7 +202,13 @@ class AttractionListController extends StateNotifier<AttractionListState> {
     Future.microtask(() async {
       try {
         await ref.read(appSyncServiceProvider).syncAllIfNeeded();
-      } catch (_) {}
+      } catch (_) {
+      } finally {
+        // After syncing is complete (regardless of success or failure), close the skeleton screen.
+        if (mounted) {
+          state = state.copyWith(isSyncing: false);
+        }
+      }
     });
   }
 

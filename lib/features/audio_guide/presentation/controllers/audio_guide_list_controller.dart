@@ -22,6 +22,7 @@ class AudioGuideListState {
     required this.errorMessage,
     required this.sortOrder,
     required this.filterType,
+    required this.isSyncing,
   });
 
   factory AudioGuideListState.initial() {
@@ -37,6 +38,8 @@ class AudioGuideListState {
       errorMessage: null,
       sortOrder: SortOrder.dateNewest,
       filterType: FilterType.all,
+      // Initial value is true (waiting for the first sync result)
+      isSyncing: true,
     );
   }
 
@@ -51,6 +54,7 @@ class AudioGuideListState {
   final String? errorMessage;
   final SortOrder sortOrder;
   final FilterType filterType;
+  final bool isSyncing; // Is background synchronization in progress
 
   bool get isDefaultFilter =>
       sortOrder == SortOrder.dateNewest && filterType == FilterType.all;
@@ -94,6 +98,7 @@ class AudioGuideListState {
     bool clearErrorMessage = false,
     SortOrder? sortOrder,
     FilterType? filterType,
+    bool? isSyncing,
   }) {
     return AudioGuideListState(
       allItems: allItems ?? this.allItems,
@@ -109,6 +114,7 @@ class AudioGuideListState {
           : (errorMessage ?? this.errorMessage),
       sortOrder: sortOrder ?? this.sortOrder,
       filterType: filterType ?? this.filterType,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 }
@@ -136,7 +142,13 @@ class AudioGuideListController extends StateNotifier<AudioGuideListState> {
     Future.microtask(() async {
       try {
         await ref.read(appSyncServiceProvider).syncAllIfNeeded();
-      } catch (_) {}
+      } catch (_) {
+      } finally {
+        // After syncing is complete (regardless of success or failure), close the skeleton screen.
+        if (mounted) {
+          state = state.copyWith(isSyncing: false);
+        }
+      }
     });
   }
 

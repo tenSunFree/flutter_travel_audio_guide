@@ -21,6 +21,7 @@ class ActivityListState {
     required this.statusFilter,
     required this.feeFilter,
     required this.distric,
+    required this.isSyncing,
   });
 
   factory ActivityListState.initial() {
@@ -37,6 +38,8 @@ class ActivityListState {
       statusFilter: ActivityStatusFilter.all,
       feeFilter: ActivityFeeFilter.all,
       distric: '',
+      // Initial value is true (waiting for the first sync result)
+      isSyncing: true,
     );
   }
 
@@ -59,6 +62,8 @@ class ActivityListState {
 
   // '' = All
   final String distric;
+
+  final bool isSyncing; // Is background synchronization in progress
 
   /// Whether it is the default state (used for AppBar red dot + summary bar highlighting)
   bool get isDefaultFilter =>
@@ -150,6 +155,7 @@ class ActivityListState {
     ActivityStatusFilter? statusFilter,
     ActivityFeeFilter? feeFilter,
     String? distric,
+    bool? isSyncing,
   }) {
     return ActivityListState(
       allItems: allItems ?? this.allItems,
@@ -166,6 +172,7 @@ class ActivityListState {
       statusFilter: statusFilter ?? this.statusFilter,
       feeFilter: feeFilter ?? this.feeFilter,
       distric: distric ?? this.distric,
+      isSyncing: isSyncing ?? this.isSyncing,
     );
   }
 }
@@ -186,7 +193,13 @@ class ActivityListController extends StateNotifier<ActivityListState> {
     Future.microtask(() async {
       try {
         await ref.read(appSyncServiceProvider).syncAllIfNeeded();
-      } catch (_) {}
+      } catch (_) {
+      } finally {
+        // After syncing is complete (regardless of success or failure), close the skeleton screen.
+        if (mounted) {
+          state = state.copyWith(isLoadingMore: false);
+        }
+      }
     });
   }
 
