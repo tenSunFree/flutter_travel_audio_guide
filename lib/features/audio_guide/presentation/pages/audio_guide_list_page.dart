@@ -75,7 +75,6 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     final controller = ref.read(audioGuideListControllerProvider.notifier);
     final isNonDefault = !state.isDefaultFilter;
     final primaryColor = Theme.of(context).colorScheme.primary;
-
     return Scaffold(
       appBar: CommonAppBar(
         actions: [
@@ -110,7 +109,11 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
       body: Builder(
         builder: (context) {
           if (state.allItems.isEmpty && state.isSyncing) {
-            return const ListSkeleton(itemCount: 8, itemHeight: 84);
+            return const ListSkeleton(
+              itemCount: 7,
+              itemHeight: 100,
+              hasLeadingBox: true,
+            );
           }
           if (state.allItems.isEmpty && !state.isSyncing) {
             return RefreshIndicator(

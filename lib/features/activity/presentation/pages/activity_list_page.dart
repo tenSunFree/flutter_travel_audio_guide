@@ -127,7 +127,11 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
         builder: (context) {
           // Skeleton screen: No local data + still syncing to the network
           if (state.allItems.isEmpty && state.isSyncing) {
-            return const ListSkeleton(itemCount: 8, itemHeight: 88);
+            return const ListSkeleton(
+              itemCount: 7,
+              itemHeight: 100,
+              hasLeadingBox: true,
+            );
           }
           // No data available: No data found locally after sync is complete
           if (state.allItems.isEmpty && !state.isSyncing) {
