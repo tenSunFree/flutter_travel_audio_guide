@@ -1,43 +1,61 @@
+import 'package:add_2_calendar/add_2_calendar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/activity.dart';
 
-class ActivityDetailPage extends StatelessWidget {
+class ActivityDetailPage extends StatefulWidget {
   const ActivityDetailPage({super.key, required this.activity});
 
   final Activity activity;
 
-  // The root domain of the travel.taipei website (Note: not the /open-api path of the API)
+  @override
+  State<ActivityDetailPage> createState() => _ActivityDetailPageState();
+}
+
+class _ActivityDetailPageState extends State<ActivityDetailPage> {
+  // First, temporarily save the page; the official version will then integrate Drift.
+  bool _isFavorite = false;
+
+  Activity get activity => widget.activity;
+
   static const String _siteBaseUrl = 'https://www.travel.taipei';
 
-  // Date formatting
-  // "2026-03-26 00:00:00 +08:00" → "2026/03/26"
+  /// Date utility
+  /// "2026-03-26 00:00:00 +08:00" → DateTime, returns null on failure
+  static DateTime? _parseDate(String raw) {
+    if (raw.trim().isEmpty) return null;
+    try {
+      return DateTime.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// "2026-03-26 00:00:00 +08:00" → "2026/03/26"
   static String _formatDate(String raw) {
     if (raw.isEmpty) return '';
     try {
       final dt = DateTime.parse(raw);
-      final y = dt.year;
-      final m = dt.month.toString().padLeft(2, '0');
-      final d = dt.day.toString().padLeft(2, '0');
-      return '$y/$m/$d';
+      return '${dt.year}/'
+          '${dt.month.toString().padLeft(2, '0')}/'
+          '${dt.day.toString().padLeft(2, '0')}';
     } catch (_) {
       return raw.split(' ').first;
     }
   }
 
-  // Relative URL → Absolute URL
-  // Handles three cases:
-  // /image/xxx → https://www.travel.taipei/image/xxx
-  // cdn.example.com → https://cdn.example.com
-  // http(s)://... → Preserve as is
+  /// URL tools
   static String _toAbsoluteUrl(String url) {
     final t = url.trim();
     if (t.isEmpty) return t;
     if (t.startsWith('http://') || t.startsWith('https://')) return t;
     if (t.startsWith('//')) return 'https:$t';
     if (t.startsWith('/')) return '$_siteBaseUrl$t';
-    // Other relative paths (for insurance purposes)
     return '$_siteBaseUrl/$t';
   }
 
@@ -72,12 +90,123 @@ class ActivityDetailPage extends StatelessWidget {
     return result;
   }
 
+  /// operate
+  Future<void> _addToCalendar() async {
+    final startDate = _parseDate(activity.begin);
+    final endDate = _parseDate(activity.end);
+    if (startDate == null || endDate == null) {
+      _showSnackBar('活動日期格式異常，無法加入行事曆');
+      return;
+    }
+    // Android needs to dynamically obtain calendar permissions
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final status = await Permission.calendar.request();
+      if (!status.isGranted) {
+        if (!mounted) return;
+        _showSnackBar('請允許行事曆權限才能新增活動');
+        return;
+      }
+    }
+    final event = Event(
+      title: activity.title,
+      description: activity.description,
+      location: activity.address.isNotEmpty
+          ? activity.address
+          : activity.organizer,
+      startDate: startDate,
+      endDate: endDate.add(const Duration(days: 1)),
+      allDay: true,
+    );
+    final success = await Add2Calendar.addEvent2Cal(event);
+    if (!mounted) return;
+    _showSnackBar(success ? '已開啟行事曆新增流程' : '無法加入行事曆');
+  }
+
+  Future<void> _shareActivity() async {
+    final beginStr = _formatDate(activity.begin);
+    final endStr = _formatDate(activity.end);
+    final activityUrl = _toAbsoluteUrl(activity.url);
+    final lines = [
+      activity.title,
+      if (beginStr.isNotEmpty || endStr.isNotEmpty) '展期：$beginStr ～ $endStr',
+      if (activity.address.isNotEmpty) '地點：${activity.address}',
+      if (activityUrl.isNotEmpty) activityUrl,
+    ];
+    await SharePlus.instance.share(ShareParams(text: lines.join('\n')));
+  }
+
+  Future<void> _callPhone() async {
+    final phone = activity.tel.trim();
+    if (phone.isEmpty) return;
+    final uri = Uri(scheme: 'tel', path: phone);
+    final success = await launchUrl(uri);
+    if (!mounted) return;
+    if (!success) _showSnackBar('無法開啟撥號功能');
+  }
+
+  Future<void> _openLink(String url) async {
+    final uri = Uri.tryParse(_toAbsoluteUrl(url));
+    if (uri == null) {
+      _showSnackBar('連結格式異常');
+      return;
+    }
+    final success = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!mounted) return;
+    if (!success) _showSnackBar('無法開啟連結');
+  }
+
+  void _toggleFavorite() {
+    setState(() => _isFavorite = !_isFavorite);
+    _showSnackBar(_isFavorite ? '已加入收藏' : '已取消收藏');
+  }
+
+  void _showSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final beginStr = _formatDate(activity.begin);
     final endStr = _formatDate(activity.end);
-    // Preprocess HTML, complete relative paths
     final normalizedDescription = _normalizeHtml(activity.description);
+    // Meta information column, only display columns with values.
+    final infoRows = <_InfoRowData>[
+      if (beginStr.isNotEmpty || endStr.isNotEmpty)
+        _InfoRowData(
+          icon: Icons.calendar_today_outlined,
+          label: '展期',
+          value: '$beginStr ～ $endStr',
+        ),
+      if (activity.organizer.isNotEmpty)
+        _InfoRowData(
+          icon: Icons.business_outlined,
+          label: '主辦',
+          value: activity.organizer,
+        ),
+      if (activity.address.isNotEmpty)
+        _InfoRowData(
+          icon: Icons.location_on_outlined,
+          label: '地點',
+          value: activity.address,
+        ),
+      if (activity.tel.isNotEmpty)
+        _InfoRowData(
+          icon: Icons.phone_outlined,
+          label: '電話',
+          value: activity.tel,
+          isTappable: true,
+          onTap: _callPhone,
+        ),
+      if (activity.ticket.isNotEmpty)
+        _InfoRowData(
+          icon: Icons.confirmation_number_outlined,
+          label: '票價',
+          value: activity.ticket,
+        ),
+    ];
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -85,6 +214,17 @@ class ActivityDetailPage extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.w800),
         ),
         centerTitle: false,
+        // Collect hearts
+        actions: [
+          IconButton(
+            tooltip: _isFavorite ? '取消收藏' : '加入收藏',
+            onPressed: _toggleFavorite,
+            icon: Icon(
+              _isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: _isFavorite ? Colors.redAccent : null,
+            ),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(height: 1, thickness: 1, color: AppColors.divider),
@@ -95,7 +235,6 @@ class ActivityDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title
             Text(
               activity.title,
               style: const TextStyle(
@@ -106,64 +245,64 @@ class ActivityDetailPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Basic Information Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.scaffoldBackground,
-                borderRadius: BorderRadius.circular(10),
+            if (infoRows.isNotEmpty)
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.scaffoldBackground,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    for (int i = 0; i < infoRows.length; i++) ...[
+                      _InfoRow(data: infoRows[i]),
+                      if (i < infoRows.length - 1)
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: AppColors.divider,
+                          indent: 14,
+                          endIndent: 14,
+                        ),
+                    ],
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (beginStr.isNotEmpty || endStr.isNotEmpty)
-                    _InfoRow(
-                      icon: Icons.calendar_today_outlined,
-                      label: '展期',
-                      value: '$beginStr ～ $endStr',
-                    ),
-                  if (activity.organizer.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _InfoRow(
-                      icon: Icons.business_outlined,
-                      label: '主辦',
-                      value: activity.organizer,
-                    ),
-                  ],
-                  if (activity.address.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _InfoRow(
-                      icon: Icons.location_on_outlined,
-                      label: '地點',
-                      value: activity.address,
-                    ),
-                  ],
-                  if (activity.tel.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _InfoRow(
-                      icon: Icons.phone_outlined,
-                      label: '電話',
-                      value: activity.tel,
-                    ),
-                  ],
-                  if (activity.ticket.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    _InfoRow(
-                      icon: Icons.confirmation_number_outlined,
-                      label: '票價',
-                      value: activity.ticket,
-                    ),
-                  ],
-                ],
-              ),
+            const SizedBox(height: 16),
+            // Calendar + Share side by side (below meta tag, above body text)
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: _addToCalendar,
+                    icon: const Icon(Icons.event_available_outlined, size: 18),
+                    label: const Text('加入行事曆'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _shareActivity,
+                    icon: const Icon(Icons.share_outlined, size: 18),
+                    label: const Text('分享活動'),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             const Divider(color: AppColors.divider),
             const SizedBox(height: 16),
-            // Activity Description (HTML Rendering)
+            // Event Introduction (HTML Rendering)
+            const Text(
+              '活動介紹',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
             HtmlWidget(
-              // Use preprocessed HTML
               normalizedDescription,
               textStyle: const TextStyle(
                 fontSize: 15,
@@ -185,7 +324,10 @@ class ActivityDetailPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              ...activity.links.map((link) => _LinkRow(link: link)),
+              ...activity.links.map(
+                (link) =>
+                    _LinkRow(link: link, onTap: () => _openLink(link.src)),
+              ),
             ],
             const SizedBox(height: 32),
           ],
@@ -195,72 +337,105 @@ class ActivityDetailPage extends StatelessWidget {
   }
 }
 
-// Small widget: Information row (icon + label + value)
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({
+class _InfoRowData {
+  const _InfoRowData({
     required this.icon,
     required this.label,
     required this.value,
+    this.isTappable = false,
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
   final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: AppColors.textCaption),
-        const SizedBox(width: 6),
-        SizedBox(
-          width: 40,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textCaption,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary),
-          ),
-        ),
-      ],
-    );
-  }
+  final bool isTappable;
+  final VoidCallback? onTap;
 }
 
-// Small components: Connect row
-class _LinkRow extends StatelessWidget {
-  const _LinkRow({required this.link});
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.data});
 
-  final ActivityLink link;
+  final _InfoRowData data;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+    final textColor = data.isTappable
+        ? Theme.of(context).colorScheme.primary
+        : AppColors.textPrimary;
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.link, size: 16, color: AppColors.textCaption),
-          const SizedBox(width: 6),
-          Expanded(
+          Icon(data.icon, size: 16, color: AppColors.textCaption),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 40,
             child: Text(
-              link.subject.isNotEmpty ? link.subject : link.src,
-              style: TextStyle(
+              data.label,
+              style: const TextStyle(
                 fontSize: 13,
-                color: Theme.of(context).colorScheme.primary,
-                decoration: TextDecoration.underline,
+                color: AppColors.textCaption,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
+          Expanded(
+            child: Text(
+              data.value,
+              style: TextStyle(
+                fontSize: 13,
+                color: textColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          if (data.isTappable)
+            Icon(Icons.chevron_right, size: 16, color: AppColors.textCaption),
         ],
+      ),
+    );
+    if (data.onTap != null) {
+      return InkWell(
+        onTap: data.onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: content,
+      );
+    }
+    return content;
+  }
+}
+
+class _LinkRow extends StatelessWidget {
+  const _LinkRow({required this.link, required this.onTap});
+
+  final ActivityLink link;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = link.subject.isNotEmpty ? link.subject : link.src;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        child: Row(
+          children: [
+            Icon(Icons.link, size: 16, color: AppColors.textCaption),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).colorScheme.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,8 +5,18 @@
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
 
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+
     <!-- Required on Android 10+ (API 29+) for SensorManager step counter access at runtime. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.INSERT" />
+            <data android:mimeType="vnd.android.cursor.dir/event" />
+        </intent>
+    </queries>
 
     <application
         android:label="flutter_travel_audio_guide"
