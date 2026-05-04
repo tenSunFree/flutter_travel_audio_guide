@@ -34,14 +34,51 @@ This project is for learning and technical practice.
 
 ## Features
 
-- Local content caching with Drift for attractions, audio guides, and activities
+### Travel Content
+
+- Browse attractions, audio guides, and activities from the Taipei Travel Open API
+- View attraction and activity detail pages with HTML description rendering
+- Display activity metadata including event period, organizer, venue, ticket information, and related links
+- Tap venue phone numbers to launch the native dialer
+- Open external links and related URLs via `url_launcher`
+
+### Offline-First Experience
+
+- Cache-first architecture: serve content from the local Drift database instantly, then refresh from remote APIs
+- Paginated API synchronization with upsert to keep local data up to date
 - Offline browsing for previously synced travel content
-- Cache-first data loading with background refresh
-- Paginated API synchronization for travel content
-- Local `.mp3` download and file existence detection
-- Offline playback for downloaded audio
-- In-app audio player with play / pause handling
-- Built with Clean Architecture and `flutter_riverpod`
+- Reactive UI updates driven by Drift DAO streams
+- Skeleton loading placeholders while remote data is loading and the local cache is empty
+
+### Audio Guide
+
+- Audio guide detail page with cover image, introduction, practical information, and playback controls
+- Local `.mp3` download with file existence detection to avoid redundant downloads
+- Offline playback for downloaded audio guides
+- In-app audio player with play / pause state management
+- Live step counting via Android sensor integration during audio guide playback
+- Post-walk session summary after completing an audio guide walk
+
+### Activity Integration
+
+- Add activity dates to the native calendar as all-day events
+- Correctly handle long-running exhibitions by applying an end-date offset for iOS all-day calendar events
+- Share activity details through the native system share sheet
+
+### Filtering and UX
+
+- Sort and filter bottom sheets for attractions, audio guides, and activities
+- Active filter summary bars showing current filter conditions
+- Consistent loading, empty state, and error state handling across all list pages
+
+### Architecture
+
+- Clean Architecture with separation of data, domain, and presentation layers
+- Feature-first project structure
+- State management with `flutter_riverpod`
+- Local persistence with Drift and generated DAOs
+- HTTP client with Dio and centralized request / response logging via Talker
+- Type-safe Android native method channels generated with Pigeon
 
 ---
 
