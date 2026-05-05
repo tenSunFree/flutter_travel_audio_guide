@@ -4,6 +4,7 @@ import '../../../../core/utils/app_log_page.dart';
 import '../../../activity/presentation/pages/activity_list_page.dart';
 import '../../../attraction/presentation/pages/attraction_list_page.dart';
 import '../../../audio_guide/presentation/pages/audio_guide_list_page.dart';
+import 'home_page.dart';
 
 class MainTabPage extends StatefulWidget {
   const MainTabPage({super.key});
@@ -18,6 +19,7 @@ class _MainTabPageState extends State<MainTabPage> {
   // IndexedStack retains the state of each page (scroll position, loaded data),
   // and switching tabs will not refresh the page.
   static const List<Widget> _pages = [
+    HomePage(),
     AudioGuideListPage(),
     ActivityListPage(),
     AttractionListPage(),
@@ -44,6 +46,11 @@ class _MainTabPageState extends State<MainTabPage> {
           setState(() => _currentIndex = index);
         },
         destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: '首頁',
+          ),
           NavigationDestination(
             icon: Icon(Icons.headphones_outlined),
             selectedIcon: Icon(Icons.headphones),
