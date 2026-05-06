@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/common_app_bar.dart';
 import '../../domain/entities/home_state.dart';
 import '../controllers/home_controller.dart';
 
@@ -21,114 +22,123 @@ class HomePage extends ConsumerWidget {
     final controller = ref.read(homeControllerProvider.notifier);
     return Scaffold(
       backgroundColor: _bg,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            controller.changePeriod(state.selectedPeriod);
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: _HomeHeader(
-                  title: '首頁',
-                  subtitle: '${state.title}・${state.subtitle}',
-                ),
-              ),
-
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
-                  child: _RainyModeCard(
-                    value: state.isRainyMode,
-                    onChanged: controller.toggleRainyMode,
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-                  child: _PeriodChips(
-                    selected: state.selectedPeriod,
-                    onSelected: controller.changePeriod,
-                  ),
-                ),
-              ),
-              if (state.isLoading && state.heroCard == null)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: _EmptyCard(message: '正在整理今日推薦...'),
-                  ),
-                )
-              else if (state.errorMessage != null)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: _EmptyCard(message: '首頁資料讀取失敗'),
-                  ),
-                )
-              else ...[
-                SliverToBoxAdapter(
-                  child: _SectionTitle(
-                    title: _heroSectionTitle(state.selectedPeriod),
-                    action: '查看全部',
-                  ),
-                ),
-                if (state.heroCard != null)
-                  SliverToBoxAdapter(
-                    child: _HeroRecommendCard(card: state.heroCard!),
-                  )
-                else
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: _EmptyCard(message: '目前沒有適合的推薦景點'),
-                    ),
-                  ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                const SliverToBoxAdapter(
-                  child: _SectionTitle(title: '現在可去', action: '排序'),
-                ),
-                SliverList.separated(
-                  itemCount: state.availableCards.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1, thickness: 1, color: _divider),
-                  itemBuilder: (context, index) {
-                    return _RecommendListTile(
-                      card: state.availableCards[index],
-                    );
-                  },
-                ),
-                if (state.availableCards.isEmpty)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: _EmptyCard(message: '目前沒有可前往景點'),
-                    ),
-                  ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                const SliverToBoxAdapter(
-                  child: _SectionTitle(title: '活動推薦', action: '全部'),
-                ),
-                SliverList.separated(
-                  itemCount: state.activityCards.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 1, thickness: 1, color: _divider),
-                  itemBuilder: (context, index) {
-                    return _RecommendListTile(card: state.activityCards[index]);
-                  },
-                ),
-                if (state.activityCards.isEmpty)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24),
-                      child: _EmptyCard(message: '目前沒有活動推薦'),
-                    ),
-                  ),
-                const SliverToBoxAdapter(child: SizedBox(height: 120)),
-              ],
-            ],
+      appBar: CommonAppBar(
+        title: '首頁',
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Enable homepage filtering / Recommendation criteria settings
+            },
+            icon: const Icon(Icons.tune),
+            tooltip: '首頁設定',
           ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          controller.changePeriod(state.selectedPeriod);
+        },
+        child: CustomScrollView(
+          // Pull-to-refresh function even when there is little data
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // Only display subtitle
+            SliverToBoxAdapter(
+              child: _HomeSubtitle(
+                subtitle: '${state.title}・${state.subtitle}',
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
+                child: _RainyModeCard(
+                  value: state.isRainyMode,
+                  onChanged: controller.toggleRainyMode,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                child: _PeriodChips(
+                  selected: state.selectedPeriod,
+                  onSelected: controller.changePeriod,
+                ),
+              ),
+            ),
+            if (state.isLoading && state.heroCard == null)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: _EmptyCard(message: '正在整理今日推薦...'),
+                ),
+              )
+            else if (state.errorMessage != null)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: _EmptyCard(message: '首頁資料讀取失敗'),
+                ),
+              )
+            else ...[
+              SliverToBoxAdapter(
+                child: _SectionTitle(
+                  title: _heroSectionTitle(state.selectedPeriod),
+                  action: '查看全部',
+                ),
+              ),
+              if (state.heroCard != null)
+                SliverToBoxAdapter(
+                  child: _HeroRecommendCard(card: state.heroCard!),
+                )
+              else
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: _EmptyCard(message: '目前沒有適合的推薦景點'),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              const SliverToBoxAdapter(
+                child: _SectionTitle(title: '現在可去', action: '排序'),
+              ),
+              SliverList.separated(
+                itemCount: state.availableCards.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, thickness: 1, color: _divider),
+                itemBuilder: (context, index) {
+                  return _RecommendListTile(card: state.availableCards[index]);
+                },
+              ),
+              if (state.availableCards.isEmpty)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: _EmptyCard(message: '目前沒有可前往景點'),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              const SliverToBoxAdapter(
+                child: _SectionTitle(title: '活動推薦', action: '全部'),
+              ),
+              SliverList.separated(
+                itemCount: state.activityCards.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, thickness: 1, color: _divider),
+                itemBuilder: (context, index) {
+                  return _RecommendListTile(card: state.activityCards[index]);
+                },
+              ),
+              if (state.activityCards.isEmpty)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: _EmptyCard(message: '目前沒有活動推薦'),
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            ],
+          ],
         ),
       ),
     );
@@ -148,55 +158,24 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.title, required this.subtitle});
+class _HomeSubtitle extends StatelessWidget {
+  const _HomeSubtitle({required this.subtitle});
 
-  final String title;
   final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: HomePage._surface,
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  '首頁',
-                  style: TextStyle(
-                    color: HomePage._textPrimary,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              IconButton(
-                onPressed: () {
-                  // set homepage filters/recommendation criteria.
-                },
-                icon: const Icon(
-                  Icons.tune,
-                  color: HomePage._textPrimary,
-                  size: 30,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: HomePage._textSecondary,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              height: 1.4,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      child: Text(
+        subtitle,
+        style: const TextStyle(
+          color: HomePage._textSecondary,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          height: 1.4,
+        ),
       ),
     );
   }
@@ -253,7 +232,6 @@ class _PeriodChips extends StatelessWidget {
       HomePeriod.evening,
       HomePeriod.night,
     ];
-
     return Row(
       children: items.map((period) {
         final isSelected = selected == period;

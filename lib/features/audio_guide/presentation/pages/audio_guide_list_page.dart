@@ -7,7 +7,7 @@ import '../../domain/entities/audio_guide.dart';
 import '../enums/sort_filter_enums.dart';
 import '../controllers/audio_guide_list_controller.dart';
 import '../widgets/audio_guide_tile.dart';
-import '../widgets/common_app_bar.dart';
+import '../../../../core/widgets/common_app_bar.dart';
 import '../widgets/condition_summary_bar.dart';
 import '../widgets/sort_filter_bottom_sheet.dart';
 import 'audio_guide_detail_page.dart';

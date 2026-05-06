@@ -8,7 +8,7 @@ import '../../../step_tracking/presentation/widgets/session_summary_card.dart';
 import '../../domain/entities/audio_guide.dart';
 import '../../domain/entities/audio_playback_state.dart';
 import '../controllers/audio_player_controller.dart';
-import '../widgets/common_app_bar.dart';
+import '../../../../core/widgets/common_app_bar.dart';
 import '../widgets/guide_image_section.dart';
 import '../widgets/playback_card.dart';
 import '../widgets/practical_info_section.dart';

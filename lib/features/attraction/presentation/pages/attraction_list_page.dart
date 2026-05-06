@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/list_skeleton.dart';
-import '../../../audio_guide/presentation/widgets/common_app_bar.dart';
+import '../../../../core/widgets/common_app_bar.dart';
 import '../../di/attraction_providers.dart';
 import '../../domain/entities/attraction.dart';
 import '../widgets/attraction_condition_summary_bar.dart';
