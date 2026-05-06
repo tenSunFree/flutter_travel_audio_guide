@@ -13,7 +13,8 @@ This project is for learning and technical practice.
 ## Preview
 
 <p align="left">
-  <img src="https://i.postimg.cc/1XYw0FKF/Screenshot-20260506-014421.png" width="160"/>
+  <img src="https://i.postimg.cc/bwQfbQxt/Screenshot-20260506-195740.png" width="160"/>
+  <img src="https://i.postimg.cc/Z5rz3r87/Screenshot-20260506-195828.png" width="160"/>
 </p> 
 <p align="left">
   <img src="https://i.postimg.cc/brv12g1R/Screenshot-20260506-015654.png" width="160"/>
