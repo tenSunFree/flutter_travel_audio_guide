@@ -1,0 +1,15 @@
+# Changelog
+
+---
+
+## [v1.0.0] - 2026-05-07
+
+### Added
+- 旅遊語音導覽核心功能
+- 景點列表、搜尋、排序與篩選
+- 活動列表與行事曆整合
+- 語音導覽下載與離線播放
+- 本機資料庫快取（Drift + SQLite）
+- 背景資料同步機制
+- GitHub Actions CI/CD 自動化流程
+- 本機開發腳本（`scripts/check.ps1`、`scripts/codegen.ps1`、`scripts/release.ps1`）

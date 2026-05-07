@@ -18,6 +18,9 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'travel_guide_db'));
 
+  // Test in-memory database
+  AppDatabase.forTesting(super.executor);
+
   @override
   int get schemaVersion => 1;
 }

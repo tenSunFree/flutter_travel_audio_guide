@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
 import '../../domain/entities/exercise_summary_data.dart';
 import '../../domain/services/step_tracking_service.dart';
 import '../enums/step_tracking_source.dart';
@@ -10,7 +9,7 @@ class StepTrackingState {
     this.isAvailable = false,
     this.hasHealthConnectPermission = false,
     this.hasSensorPermission = false,
-    this.source = StepTrackingSource.sensor, // 預設 sensor
+    this.source = StepTrackingSource.sensor, // Preset sensor
     this.steps = 0,
     this.distance = 0.0,
     this.isTracking = false,

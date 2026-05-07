@@ -215,7 +215,8 @@ class AudioGuideListController extends StateNotifier<AudioGuideListState> {
 
   @override
   void dispose() {
-    _sub?.cancel();
+    // ignore() prevents the future from being pending.
+    _sub?.cancel().ignore();
     super.dispose();
   }
 }
