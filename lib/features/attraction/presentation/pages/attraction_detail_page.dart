@@ -176,7 +176,7 @@ class _ImageSectionState extends State<_ImageSection> {
             itemBuilder: (_, i) => Image.network(
               images[i].src,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 color: AppColors.surfaceMuted,
                 alignment: Alignment.center,
                 child: const Icon(

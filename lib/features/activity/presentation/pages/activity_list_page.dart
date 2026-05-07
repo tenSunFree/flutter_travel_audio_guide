@@ -226,7 +226,7 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount:
                           state.items.length + (state.isLoadingMore ? 1 : 0),
-                      separatorBuilder: (_, __) =>
+                      separatorBuilder: (_, _) =>
                           const Divider(height: 1, color: AppColors.divider),
                       itemBuilder: (context, index) {
                         if (index >= state.items.length) {

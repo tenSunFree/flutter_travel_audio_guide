@@ -104,7 +104,7 @@ class HomePage extends ConsumerWidget {
               ),
               SliverList.separated(
                 itemCount: state.availableCards.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const Divider(height: 1, thickness: 1, color: _divider),
                 itemBuilder: (context, index) {
                   return _RecommendListTile(card: state.availableCards[index]);
@@ -123,7 +123,7 @@ class HomePage extends ConsumerWidget {
               ),
               SliverList.separated(
                 itemCount: state.activityCards.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const Divider(height: 1, thickness: 1, color: _divider),
                 itemBuilder: (context, index) {
                   return _RecommendListTile(card: state.activityCards[index]);
@@ -333,7 +333,7 @@ class _HeroRecommendCard extends StatelessWidget {
                 ? Image.network(
                     card.imageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _FallbackImage(card.emoji),
+                    errorBuilder: (_, _, _) => _FallbackImage(card.emoji),
                   )
                 : _FallbackImage(card.emoji),
           ),
@@ -550,7 +550,7 @@ class _Thumb extends StatelessWidget {
             ? Image.network(
                 card.imageUrl!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _FallbackImage(card.emoji),
+                errorBuilder: (_, _, _) => _FallbackImage(card.emoji),
               )
             : _FallbackImage(card.emoji),
       ),

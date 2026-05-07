@@ -182,7 +182,7 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
                           isDownloading: state.downloadingIds.contains(
                             guide.id,
                           ),
-                          onActionPressed: () => _handleAction(context, guide),
+                          onActionPressed: () => _handleAction(guide),
                         );
                       },
                     ),
@@ -206,7 +206,7 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     );
   }
 
-  Future<void> _handleAction(BuildContext context, AudioGuide guide) async {
+  Future<void> _handleAction(AudioGuide guide) async {
     if (guide.isDownloaded && guide.localFilePath != null) {
       _openDetail(context, guide);
       return;

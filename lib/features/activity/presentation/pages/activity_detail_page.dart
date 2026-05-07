@@ -100,7 +100,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     }
     // Android needs to dynamically obtain calendar permissions
     if (defaultTargetPlatform == TargetPlatform.android) {
-      final status = await Permission.calendar.request();
+      final status = await Permission.calendarWriteOnly.request();
       if (!status.isGranted) {
         if (!mounted) return;
         _showSnackBar('請允許行事曆權限才能新增活動');

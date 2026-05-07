@@ -50,12 +50,12 @@ class _ListSkeletonState extends State<ListSkeleton>
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, _) {
-        final color = baseColor.withOpacity(_animation.value);
+        final color = baseColor.withValues(alpha: _animation.value);
         return ListView.separated(
           physics: const NeverScrollableScrollPhysics(),
           itemCount: widget.itemCount,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (_, __) => _SkeletonItem(
+          separatorBuilder: (_, _) => const Divider(height: 1),
+          itemBuilder: (_, _) => _SkeletonItem(
             height: widget.itemHeight,
             color: color,
             hasLeadingBox: widget.hasLeadingBox,
