@@ -29,7 +29,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.0'   # ← 同上，與 ci.yml 保持一致
+          # Keep it consistent with ci.yml
+          flutter-version: '3.41.9'
           channel: stable
           cache: true
       - name: Show Flutter & Dart version
