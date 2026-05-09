@@ -1,6 +1,7 @@
 # travel_audio_guide_flutter
 
 ![CI](https://github.com/tenSunFree/travel_audio_guide_flutter/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/tenSunFree/travel-audio-guide-flutter/actions/workflows/cd.yml/badge.svg)
 
 ---
 
