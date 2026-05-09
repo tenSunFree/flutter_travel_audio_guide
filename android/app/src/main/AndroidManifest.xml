@@ -18,6 +18,13 @@
         </intent>
     </queries>
 
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:label="flutter_travel_audio_guide"
         android:name="${applicationName}"

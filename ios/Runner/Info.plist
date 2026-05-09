@@ -47,5 +47,10 @@
 	<true/>
 	<key>NSCalendarsUsageDescription</key>
     <string>需要將活動展演加入您的行事曆。</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>comgooglemaps</string>
+      <string>https</string>
+    </array>
 </dict>
 </plist>
