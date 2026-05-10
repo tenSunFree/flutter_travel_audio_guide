@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/utils/app_log_page.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../activity/presentation/pages/activity_list_page.dart';
 import '../../../attraction/presentation/pages/attraction_list_page.dart';
 import '../../../audio_guide/presentation/pages/audio_guide_list_page.dart';
@@ -16,8 +17,7 @@ class MainTabPage extends StatefulWidget {
 class _MainTabPageState extends State<MainTabPage> {
   int _currentIndex = 0;
 
-  // IndexedStack retains the state of each page (scroll position, loaded data),
-  // and switching tabs will not refresh the page.
+  // IndexedStack retains the state of each page (scroll position, loaded data), and switching tabs will not restructure it.
   static const List<Widget> _pages = [
     HomePage(),
     AudioGuideListPage(),
@@ -34,10 +34,7 @@ class _MainTabPageState extends State<MainTabPage> {
               heroTag: 'debug_log',
               backgroundColor: Colors.red,
               child: const Icon(Icons.bug_report, color: Colors.white),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AppLogPage()),
-              ),
+              onPressed: () => context.push(AppRoutes.appLog),
             )
           : null,
       bottomNavigationBar: NavigationBar(

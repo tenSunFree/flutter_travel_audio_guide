@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/list_skeleton.dart';
 import '../../../../core/widgets/common_app_bar.dart';
 import '../../domain/entities/activity.dart';
@@ -9,7 +11,6 @@ import '../controllers/activity_list_controller.dart';
 import '../widgets/activity_condition_summary_bar.dart';
 import '../widgets/activity_sort_filter_bottom_sheet.dart';
 import '../widgets/activity_tile.dart';
-import 'activity_detail_page.dart';
 
 class ActivityListPage extends ConsumerStatefulWidget {
   const ActivityListPage({super.key});
@@ -44,7 +45,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
     super.dispose();
   }
 
-  // Enable filtering on the BottomSheet
   Future<void> _openSortFilter(BuildContext context) async {
     final state = ref.read(activityListControllerProvider);
     final result = await showModalBottomSheet<ActivityFilterResult>(
@@ -76,14 +76,9 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
   }
 
   void _openDetail(Activity activity) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ActivityDetailPage(activity: activity),
-      ),
-    );
+    context.push(AppRoutes.activityDetail, extra: activity);
   }
 
-  // Build
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(activityListControllerProvider);
@@ -105,7 +100,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                 tooltip: '排序與篩選',
                 onPressed: () => _openSortFilter(context),
               ),
-              // Red dot: Displayed when there are non-preset conditions
               if (isNonDefault)
                 Positioned(
                   top: 10,
@@ -125,7 +119,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
       ),
       body: Builder(
         builder: (context) {
-          // Skeleton screen: No local data + still syncing to the network
           if (state.allItems.isEmpty && state.isSyncing) {
             return const ListSkeleton(
               itemCount: 7,
@@ -133,7 +126,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
               hasLeadingBox: true,
             );
           }
-          // No data available: No data found locally after sync is complete
           if (state.allItems.isEmpty && !state.isSyncing) {
             return RefreshIndicator(
               onRefresh: controller.loadInitial,
@@ -146,7 +138,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
               ),
             );
           }
-          // Initial loading failed (no data found)
           if (state.errorMessage != null && state.allItems.isEmpty) {
             return Center(
               child: Padding(
@@ -169,7 +160,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
               ),
             );
           }
-          // Data exists but is empty after filtering
           if (!state.isInitialLoading &&
               state.allItems.isNotEmpty &&
               state.items.isEmpty) {
@@ -198,7 +188,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
               ],
             );
           }
-          // ── Normal List
           return RefreshIndicator(
             onRefresh: controller.loadInitial,
             child: Column(
@@ -215,7 +204,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
                     child: ListView.separated(
-                      // The key changes with the filter criteria, triggering the AnimatedSwitcher animation.
                       key: ValueKey(
                         '${state.sortOrder.name}_'
                         '${state.statusFilter.name}_'
@@ -244,7 +232,6 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
                     ),
                   ),
                 ),
-                // Load more failed bottom error banners
                 if (state.errorMessage != null && state.allItems.isNotEmpty)
                   Container(
                     width: double.infinity,

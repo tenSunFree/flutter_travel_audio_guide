@@ -96,7 +96,6 @@ class HomeRepository {
     final categoryNames = item.categories.map((e) => e.name).toList();
     final openResult = _openTimeParser.parse(item.openTime, now);
     var score = 0;
-    // Already exists in the database, considered a candidate for display.
     score += 30;
     if (item.images.isNotEmpty) score += 10;
     if (item.nlat != null && item.elong != null) score += 10;
@@ -128,6 +127,7 @@ class HomeRepository {
         lng: item.elong,
         type: HomeRecommendType.attraction,
         emoji: _fallbackEmoji(categoryNames),
+        attraction: item,
       ),
     );
   }
@@ -166,6 +166,7 @@ class HomeRepository {
         lng: double.tryParse(item.elong),
         type: HomeRecommendType.activity,
         emoji: _buildDateEmoji(begin),
+        activity: item,
       ),
     );
   }
@@ -200,30 +201,45 @@ class HomeRepository {
   }
 
   bool _matchesPeriod(List<String> categories, HomePeriod period) {
-    switch (period) {
-      case HomePeriod.morning:
-        return _containsAny(categories, ['戶外踏青', '親子共遊', '公園', '步道', '宗教信仰']);
-      case HomePeriod.afternoon:
-        return _containsAny(categories, ['藝文館所', '歷史建築', '博物館', '親子共遊']);
-      case HomePeriod.evening:
-        return _containsAny(categories, ['河岸', '公園', '商街', '夜市', '觀景', '戶外踏青']);
-      case HomePeriod.night:
-        return _containsAny(categories, ['觀光夜市', '主題商街', '夜景', '觀景']);
-    }
+    return switch (period) {
+      HomePeriod.morning => _containsAny(categories, [
+        '戶外踏青',
+        '親子共遊',
+        '公園',
+        '步道',
+        '宗教信仰',
+      ]),
+      HomePeriod.afternoon => _containsAny(categories, [
+        '藝文館所',
+        '歷史建築',
+        '博物館',
+        '親子共遊',
+      ]),
+      HomePeriod.evening => _containsAny(categories, [
+        '河岸',
+        '公園',
+        '商街',
+        '夜市',
+        '觀景',
+        '戶外踏青',
+      ]),
+      HomePeriod.night => _containsAny(categories, [
+        '觀光夜市',
+        '主題商街',
+        '夜景',
+        '觀景',
+      ]),
+    };
   }
 
-  bool _isIndoor(List<String> categories) {
-    return _containsAny(categories, ['藝文館所', '歷史建築', '博物館', '主題商街']);
-  }
+  bool _isIndoor(List<String> categories) =>
+      _containsAny(categories, ['藝文館所', '歷史建築', '博物館', '主題商街']);
 
-  bool _isOutdoor(List<String> categories) {
-    return _containsAny(categories, ['戶外踏青', '單車遊蹤', '藍色水路', '河岸']);
-  }
+  bool _isOutdoor(List<String> categories) =>
+      _containsAny(categories, ['戶外踏青', '單車遊蹤', '藍色水路', '河岸']);
 
   bool _containsAny(List<String> source, List<String> keywords) {
-    return source.any((name) {
-      return keywords.any((keyword) => name.contains(keyword));
-    });
+    return source.any((name) => keywords.any((k) => name.contains(k)));
   }
 
   String _fallbackEmoji(List<String> categories) {

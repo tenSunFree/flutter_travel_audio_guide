@@ -1,3 +1,6 @@
+import '../../../activity/domain/entities/activity.dart';
+import '../../../attraction/domain/entities/attraction.dart';
+
 enum HomePeriod { morning, afternoon, evening, night }
 
 enum RecommendStatus {
@@ -94,6 +97,11 @@ class HomeRecommendCard {
   final HomeRecommendType type;
   final String emoji;
 
+  // Original data, used for direct redirection from the homepage to the details page
+  // No need to query the database again, clicks will automatically take you there
+  final Attraction? attraction;
+  final Activity? activity;
+
   const HomeRecommendCard({
     required this.id,
     required this.title,
@@ -107,6 +115,8 @@ class HomeRecommendCard {
     required this.lng,
     required this.type,
     required this.emoji,
+    this.attraction,
+    this.activity,
   });
 }
 
@@ -120,41 +130,29 @@ extension HomePeriodHelper on HomePeriod {
   }
 
   static String label(HomePeriod period) {
-    switch (period) {
-      case HomePeriod.morning:
-        return '早上';
-      case HomePeriod.afternoon:
-        return '下午';
-      case HomePeriod.evening:
-        return '傍晚';
-      case HomePeriod.night:
-        return '夜間';
-    }
+    return switch (period) {
+      HomePeriod.morning => '早上',
+      HomePeriod.afternoon => '下午',
+      HomePeriod.evening => '傍晚',
+      HomePeriod.night => '夜間',
+    };
   }
 
   static String title(HomePeriod period) {
-    switch (period) {
-      case HomePeriod.morning:
-        return '早安，今天想去哪走走？';
-      case HomePeriod.afternoon:
-        return '午後適合看展或散步';
-      case HomePeriod.evening:
-        return '傍晚，台北開始亮起來';
-      case HomePeriod.night:
-        return '夜晚，台北最美的時刻';
-    }
+    return switch (period) {
+      HomePeriod.morning => '早安，今天想去哪走走？',
+      HomePeriod.afternoon => '午後適合看展或散步',
+      HomePeriod.evening => '傍晚，台北開始亮起來',
+      HomePeriod.night => '夜晚，台北最美的時刻',
+    };
   }
 
   static String subtitle(HomePeriod period) {
-    switch (period) {
-      case HomePeriod.morning:
-        return '適合晨間散步、步道與戶外景點';
-      case HomePeriod.afternoon:
-        return '為你整理現在適合安排的景點';
-      case HomePeriod.evening:
-        return '適合河岸、夕陽、夜市與晚間活動';
-      case HomePeriod.night:
-        return '夜市人聲鼎沸・夜景景點也正適合出發';
-    }
+    return switch (period) {
+      HomePeriod.morning => '適合晨間散步、步道與戶外景點',
+      HomePeriod.afternoon => '為你整理現在適合安排的景點',
+      HomePeriod.evening => '適合河岸、夕陽、夜市與晚間活動',
+      HomePeriod.night => '夜市人聲鼎沸・夜景景點也正適合出發',
+    };
   }
 }

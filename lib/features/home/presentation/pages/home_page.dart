@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/common_app_bar.dart';
 import '../../domain/entities/home_state.dart';
 import '../controllers/home_controller.dart';
@@ -15,6 +17,35 @@ import '../widgets/recommend_list_tile.dart';
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
+  // Unified jump logic
+  void _openRecommendDetail(BuildContext context, HomeRecommendCard card) {
+    switch (card.type) {
+      case HomeRecommendType.attraction:
+        final attraction = card.attraction;
+        if (attraction == null) {
+          _showErrorSnackBar(context, '找不到景點詳細資料');
+          return;
+        }
+        context.push(AppRoutes.attractionDetail, extra: attraction);
+      case HomeRecommendType.activity:
+        final activity = card.activity;
+        if (activity == null) {
+          _showErrorSnackBar(context, '找不到活動詳細資料');
+          return;
+        }
+        context.push(AppRoutes.activityDetail, extra: activity);
+      case HomeRecommendType.audioGuide:
+        // There are currently no recommended audio guide cards on the homepage; these are reserved for future use.
+        break;
+    }
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(homeControllerProvider);
@@ -26,7 +57,7 @@ class HomePage extends ConsumerWidget {
         actions: [
           IconButton(
             onPressed: () {
-              // Homepage Filter / Recommendation Criteria Settings
+              // Homepage Filter Settings
             },
             icon: const Icon(Icons.tune),
             tooltip: '首頁設定',
@@ -38,11 +69,9 @@ class HomePage extends ConsumerWidget {
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            // Subtitle (Time Period Description)
             SliverToBoxAdapter(
               child: HomeSubtitle(subtitle: '${state.title}・${state.subtitle}'),
             ),
-            // Rainy day filing switch
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
@@ -52,7 +81,6 @@ class HomePage extends ConsumerWidget {
                 ),
               ),
             ),
-            // Time period selection Chips
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
@@ -62,7 +90,6 @@ class HomePage extends ConsumerWidget {
                 ),
               ),
             ),
-            // Main content area
             if (state.isLoading && state.heroCard == null)
               const SliverToBoxAdapter(
                 child: Padding(
@@ -78,13 +105,12 @@ class HomePage extends ConsumerWidget {
                 ),
               )
             else ...[
-              // Featured Recommendation (Hero Card)
               SliverToBoxAdapter(
                 child: HomeSectionTitle(
                   title: _heroSectionTitle(state.selectedPeriod),
                   action: '查看全部',
                   onActionTap: () {
-                    // Redirect to the complete list of attractions
+                    // Jump to the full list of attractions
                   },
                 ),
               ),
@@ -92,10 +118,8 @@ class HomePage extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: HeroRecommendCard(
                     card: state.heroCard!,
-                    onViewDetail: () {
-                      // Redirect to the attraction details page
-                      // context.push('/attraction/${state.heroCard!.id}')
-                    },
+                    onViewDetail: () =>
+                        _openRecommendDetail(context, state.heroCard!),
                   ),
                 )
               else
@@ -106,23 +130,18 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              // Now you can go
               const SliverToBoxAdapter(
                 child: HomeSectionTitle(title: '現在可去', action: '排序'),
               ),
-              SliverList.separated(
+              SliverList.builder(
                 itemCount: state.availableCards.length,
-                separatorBuilder: (_, _) => const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: AppColors.divider,
-                ),
-                itemBuilder: (context, index) => RecommendListTile(
-                  card: state.availableCards[index],
-                  onTap: () {
-                    // Redirect to the corresponding details page
-                  },
-                ),
+                itemBuilder: (context, index) {
+                  final card = state.availableCards[index];
+                  return RecommendListTile(
+                    card: card,
+                    onTap: () => _openRecommendDetail(context, card),
+                  );
+                },
               ),
               if (state.availableCards.isEmpty)
                 const SliverToBoxAdapter(
@@ -132,23 +151,18 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              // Activity Recommendation
               const SliverToBoxAdapter(
                 child: HomeSectionTitle(title: '活動推薦', action: '全部'),
               ),
-              SliverList.separated(
+              SliverList.builder(
                 itemCount: state.activityCards.length,
-                separatorBuilder: (_, _) => const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: AppColors.divider,
-                ),
-                itemBuilder: (context, index) => RecommendListTile(
-                  card: state.activityCards[index],
-                  onTap: () {
-                    // Redirect to the event details page
-                  },
-                ),
+                itemBuilder: (context, index) {
+                  final card = state.activityCards[index];
+                  return RecommendListTile(
+                    card: card,
+                    onTap: () => _openRecommendDetail(context, card),
+                  );
+                },
               ),
               if (state.activityCards.isEmpty)
                 const SliverToBoxAdapter(
@@ -166,15 +180,11 @@ class HomePage extends ConsumerWidget {
   }
 
   static String _heroSectionTitle(HomePeriod period) {
-    switch (period) {
-      case HomePeriod.morning:
-        return '早晨推薦';
-      case HomePeriod.afternoon:
-        return '午後推薦';
-      case HomePeriod.evening:
-        return '傍晚推薦';
-      case HomePeriod.night:
-        return '夜間推薦';
-    }
+    return switch (period) {
+      HomePeriod.morning => '早晨推薦',
+      HomePeriod.afternoon => '午後推薦',
+      HomePeriod.evening => '傍晚推薦',
+      HomePeriod.night => '夜間推薦',
+    };
   }
 }

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/list_skeleton.dart';
 import '../../../../core/widgets/common_app_bar.dart';
 import '../../di/attraction_providers.dart';
@@ -9,7 +11,6 @@ import '../../domain/entities/attraction.dart';
 import '../widgets/attraction_condition_summary_bar.dart';
 import '../widgets/attraction_sort_filter_bottom_sheet.dart';
 import '../widgets/attraction_tile.dart';
-import 'attraction_detail_page.dart';
 
 class AttractionListPage extends ConsumerStatefulWidget {
   const AttractionListPage({super.key});
@@ -77,11 +78,7 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
   }
 
   void _openDetail(Attraction attraction) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AttractionDetailPage(attraction: attraction),
-      ),
-    );
+    context.push(AppRoutes.attractionDetail, extra: attraction);
   }
 
   @override
@@ -165,7 +162,6 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
               ),
             );
           }
-          // Data exists but is empty after filtering
           if (!state.isLoading &&
               state.allItems.isNotEmpty &&
               state.items.isEmpty) {

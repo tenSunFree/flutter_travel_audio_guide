@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/router/app_router.dart';
 import '../../../../core/widgets/list_skeleton.dart';
+import '../../../../core/widgets/common_app_bar.dart';
 import '../../domain/entities/audio_guide.dart';
 import '../enums/sort_filter_enums.dart';
 import '../controllers/audio_guide_list_controller.dart';
 import '../widgets/audio_guide_tile.dart';
-import '../../../../core/widgets/common_app_bar.dart';
 import '../widgets/condition_summary_bar.dart';
 import '../widgets/sort_filter_bottom_sheet.dart';
-import 'audio_guide_detail_page.dart';
 
 class AudioGuideListPage extends ConsumerStatefulWidget {
   const AudioGuideListPage({super.key});
@@ -32,9 +33,7 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     if (!_scrollController.hasClients) return;
     const threshold = 240.0;
     final position = _scrollController.position;
-    final shouldLoadMore =
-        position.pixels >= position.maxScrollExtent - threshold;
-    if (shouldLoadMore) {
+    if (position.pixels >= position.maxScrollExtent - threshold) {
       unawaited(ref.read(audioGuideListControllerProvider.notifier).loadMore());
     }
   }
@@ -69,6 +68,33 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     }
   }
 
+  Future<void> _handleAction(AudioGuide guide) async {
+    if (guide.isDownloaded && guide.localFilePath != null) {
+      context.push(AppRoutes.audioGuideDetail, extra: guide);
+      return;
+    }
+    final error = await ref
+        .read(audioGuideListControllerProvider.notifier)
+        .downloadGuide(guide);
+    if (!mounted) return;
+    if (error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
+      return;
+    }
+    final latestState = ref.read(audioGuideListControllerProvider);
+    final latestGuide = latestState.items.firstWhere(
+      (item) => item.id == guide.id,
+      orElse: () => guide,
+    );
+    if (latestGuide.localFilePath != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('下載完成')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(audioGuideListControllerProvider);
@@ -77,6 +103,7 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     return Scaffold(
       appBar: CommonAppBar(
+        title: '語音導覽',
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -127,14 +154,18 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
               ),
             );
           }
-          if (state.errorMessage != null && state.items.isEmpty) {
+          if (state.errorMessage != null && state.allItems.isEmpty) {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(state.errorMessage!, textAlign: TextAlign.center),
+                    Text(
+                      state.errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: controller.loadInitial,
@@ -145,11 +176,36 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
               ),
             );
           }
+          if (!state.isInitialLoading &&
+              state.allItems.isNotEmpty &&
+              state.items.isEmpty) {
+            return Column(
+              children: [
+                ConditionSummaryBar(
+                  sortOrder: state.sortOrder,
+                  filterType: state.filterType,
+                  isNonDefault: isNonDefault,
+                  onReset: controller.resetSortFilter,
+                ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: controller.loadInitial,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(height: 160),
+                        Center(child: Text('目前沒有符合條件的語音導覽')),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
           return RefreshIndicator(
             onRefresh: controller.loadInitial,
             child: Column(
               children: [
-                // Condition summary bar
                 ConditionSummaryBar(
                   sortOrder: state.sortOrder,
                   filterType: state.filterType,
@@ -202,41 +258,6 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Future<void> _handleAction(AudioGuide guide) async {
-    if (guide.isDownloaded && guide.localFilePath != null) {
-      _openDetail(context, guide);
-      return;
-    }
-    final error = await ref
-        .read(audioGuideListControllerProvider.notifier)
-        .downloadGuide(guide);
-    if (!mounted) return;
-    if (error != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error)));
-      return;
-    }
-    final latestState = ref.read(audioGuideListControllerProvider);
-    final latestGuide = latestState.items.firstWhere(
-      (item) => item.id == guide.id,
-      orElse: () => guide,
-    );
-    if (latestGuide.localFilePath != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('下載完成')));
-    }
-  }
-
-  void _openDetail(BuildContext context, AudioGuide guide) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => AudioGuideDetailPage(guide: guide),
       ),
     );
   }
