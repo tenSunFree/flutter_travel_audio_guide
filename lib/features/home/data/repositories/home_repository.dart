@@ -239,7 +239,7 @@ class HomeRepository {
   String _buildDateEmoji(DateTime date) {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
-    return '$month月\n$day';
+    return '$month/$day';
   }
 
   DateTime? _parseApiDate(String value) {
