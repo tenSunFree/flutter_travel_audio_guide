@@ -106,6 +106,8 @@ This project is for learning and technical practice.
   Type-safe platform interop code generation (Bridges Flutter and native APIs with strongly typed messages, minimizes platform channel boilerplate, and improves maintainability for platform integration)
 - Drift  
   Local persistence layer built on SQLite (Provides typed DAOs, reactive database streams, local caching, and offline browsing support)
+- go_router  
+  Declarative routing solution (Centralizes navigation logic, manages detail page routing via `extra` object passing, and improves maintainability across feature modules)
 
 ---
 
