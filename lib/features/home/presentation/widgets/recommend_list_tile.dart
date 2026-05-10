@@ -58,7 +58,7 @@ class RecommendListTile extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         elevation: 1,
-        shadowColor: Colors.black.withOpacity(0.07),
+        shadowColor: Colors.black.withValues(alpha: 0.07),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
