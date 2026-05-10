@@ -16,9 +16,10 @@ This project is for learning and technical practice.
 ## Preview
 
 <p align="left">
-  <img src="https://i.postimg.cc/G3BRz6CX/111.png" width="160"/>
-  <img src="https://i.postimg.cc/MZcwtgSd/222.png" width="160"/>
-  <img src="https://i.postimg.cc/Th8CcK6y/333.png" width="160"/>
+  <img src="https://i.postimg.cc/DZNmrcFJ/Screenshot-20260510-130756.png" width="160"/>
+  <img src="https://i.postimg.cc/V6h5qF1f/Screenshot-20260510-130807.png" width="160"/>
+  <img src="https://i.postimg.cc/RFYq7T9t/Screenshot-20260510-130814.png" width="160"/>
+  <img src="https://i.postimg.cc/wvr3XkH3/Screenshot-20260510-130835.png" width="160"/>
 </p> 
 <p align="left">
   <img src="https://i.postimg.cc/brv12g1R/Screenshot-20260506-015654.png" width="160"/>
