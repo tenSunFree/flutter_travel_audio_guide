@@ -1,0 +1,5 @@
+{
+  "SENTRY_DSN": "https://your_key@your_org.ingest.sentry.io/your_project_id",
+  "APP_ENV": "development/production",
+  "APP_RELEASE": "flutter-travel-audio-guide@1.0.0"
+}

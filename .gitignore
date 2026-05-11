@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment config (real environment values not included in Git)
+# example.json is a template and is included in Git
+# dev.json release.json contains the real key and is not included in Git
+env/dev.json
+env/release.json

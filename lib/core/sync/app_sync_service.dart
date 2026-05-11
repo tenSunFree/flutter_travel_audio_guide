@@ -3,6 +3,7 @@ import '../../features/attraction/data/models/attraction_model.dart';
 import '../../features/audio_guide/data/models/audio_guide_model.dart';
 import '../database/app_database.dart';
 import '../constants/api_constants.dart';
+import '../monitoring/monitoring_service.dart';
 import '../utils/app_logger.dart';
 import '../../features/attraction/data/datasources/attraction_remote_data_source.dart';
 import '../../features/audio_guide/data/datasources/audio_guide_remote_data_source.dart';
@@ -22,31 +23,39 @@ class AppSyncService {
   final AttractionRemoteDataSource attractionRemote;
   final AudioGuideRemoteDataSource audioGuideRemote;
   final ActivityRemoteDataSource activityRemote;
-
   static const _attractionKey = 'sync_attractions';
   static const _audioGuideKey = 'sync_audio_guides';
   static const _activityKey = 'sync_activities';
-
   static const _attractionTtl = Duration(hours: 3);
   static const _audioGuideTtl = Duration(hours: 3);
   static const _activityTtl = Duration(hours: 1);
 
+  // Critical business path: Offline synchronization / Drift cache
+  // - monitorFuture tracks overall synchronization time
+  // - The original _syncIfNeeded's catch block now handles captureException (warning, with cache as a fallback).
   Future<void> syncAllIfNeeded() async {
-    // Attraction must be matched with the AudioGuide before it can be used.
-    await _syncIfNeeded(
-      key: _attractionKey,
-      ttl: _attractionTtl,
-      sync: _syncAttractions,
-    );
-    await _syncIfNeeded(
-      key: _audioGuideKey,
-      ttl: _audioGuideTtl,
-      sync: _syncAudioGuides,
-    );
-    await _syncIfNeeded(
-      key: _activityKey,
-      ttl: _activityTtl,
-      sync: _syncActivities,
+    await MonitoringService.monitorFuture<void>(
+      name: 'Sync All If Needed',
+      operation: 'offline.sync_all_if_needed',
+      description: 'TTL based background sync',
+      action: () async {
+        // Attraction must precede AudioGuide; AudioGuide's match depends on attraction data.
+        await _syncIfNeeded(
+          key: _attractionKey,
+          ttl: _attractionTtl,
+          sync: _syncAttractions,
+        );
+        await _syncIfNeeded(
+          key: _audioGuideKey,
+          ttl: _audioGuideTtl,
+          sync: _syncAudioGuides,
+        );
+        await _syncIfNeeded(
+          key: _activityKey,
+          ttl: _activityTtl,
+          sync: _syncActivities,
+        );
+      },
     );
   }
 
@@ -64,19 +73,26 @@ class AppSyncService {
       await db.syncMetaDao.saveLastSyncedAt(key);
     } catch (e, st) {
       AppLogger.error('[$key] sync failed', exception: e, stackTrace: st);
-      // Background synchronization failure does not affect the UI
+      // Report to Sentry (warning, because there is an offline cache as a backup, it is not fatal)
+      await MonitoringService.captureException(
+        e,
+        stackTrace: st,
+        operation: 'offline.sync',
+        extras: {
+          'sync_key': key,
+          'last_synced_at': lastSyncedAt?.toIso8601String(),
+        },
+      );
     }
   }
 
   Future<void> _syncAttractions() async {
-    // Page Breakdown
     final allRemote = await _fetchAllPages<AttractionModel, dynamic>(
       fetch: (page) => attractionRemote.getAttractions(
         lang: ApiConstants.defaultLang,
         page: page,
       ),
     );
-    // Compare with modified; only upsert has changed.
     final localRows = await db.attractionDao.getAll();
     final localModifiedMap = {for (final r in localRows) r.id: r.modified};
     final changed = allRemote
@@ -150,7 +166,6 @@ class AppSyncService {
     }
   }
 
-  /// General pagination tool
   Future<List<T>> _fetchAllPages<T, P>({
     required Future<P> Function(int page) fetch,
   }) async {
@@ -158,7 +173,6 @@ class AppSyncService {
     int page = 1;
     while (true) {
       final pageModel = await fetch(page);
-      // pageModel 是 AttractionPageModel / AudioGuidePageModel / ActivityPageModel
       final data = (pageModel as dynamic).data as List;
       all.addAll(data.cast<T>());
       if (all.length >= (pageModel as dynamic).total) break;
@@ -182,18 +196,26 @@ class AppSyncService {
     }
   }
 
-  /// Called when pull-to-refresh (forces update, ignores TTL)
+  /// Pull-to-refresh forces synchronization (ignores TTL)
   Future<void> forceSync(SyncTarget target) async {
-    switch (target) {
-      case SyncTarget.attractions:
-        await _syncAttractions();
-        await db.syncMetaDao.saveLastSyncedAt(_attractionKey);
-      case SyncTarget.audioGuides:
-        await _syncAudioGuides();
-        await db.syncMetaDao.saveLastSyncedAt(_audioGuideKey);
-      case SyncTarget.activities:
-        await _syncActivities();
-        await db.syncMetaDao.saveLastSyncedAt(_activityKey);
-    }
+    await MonitoringService.monitorFuture<void>(
+      name: 'Force Sync ${target.name}',
+      operation: 'offline.force_sync',
+      description: target.name,
+      extras: {'target': target.name},
+      action: () async {
+        switch (target) {
+          case SyncTarget.attractions:
+            await _syncAttractions();
+            await db.syncMetaDao.saveLastSyncedAt(_attractionKey);
+          case SyncTarget.audioGuides:
+            await _syncAudioGuides();
+            await db.syncMetaDao.saveLastSyncedAt(_audioGuideKey);
+          case SyncTarget.activities:
+            await _syncActivities();
+            await db.syncMetaDao.saveLastSyncedAt(_activityKey);
+        }
+      },
+    );
   }
 }

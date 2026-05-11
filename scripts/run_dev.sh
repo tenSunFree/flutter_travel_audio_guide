@@ -1,0 +1,44 @@
+#!/bin/bash
+# scripts/run_dev.sh
+#
+# Development mode startup script (macOS / Linux)
+# Usage: bash scripts/run_dev.sh [device_id]
+# # Example:
+# bash scripts/run_dev.sh # Automatically select device
+# bash scripts/run_dev.sh emulator-5554
+
+set -e
+
+ENV_FILE="env/dev.json"
+
+# Confirm that env/dev.json exists
+if [ ! -f "$ENV_FILE" ]; then
+  echo ""
+  echo "找不到 $ENV_FILE"
+  echo ""
+  echo "請照以下步驟建立："
+  echo "  1. cp env/example.json env/dev.json"
+  echo "  2. 用編輯器打開 env/dev.json"
+  echo "  3. 填入你的 SENTRY_DSN"
+  echo ""
+  exit 1
+fi
+
+DEVICE=${1:-""}
+
+echo ""
+echo "啟動開發模式..."
+echo "    env file : $ENV_FILE"
+if [ -n "$DEVICE" ]; then
+  echo "    device   : $DEVICE"
+fi
+echo ""
+
+if [ -n "$DEVICE" ]; then
+  flutter run \
+    --dart-define-from-file="$ENV_FILE" \
+    --device-id="$DEVICE"
+else
+  flutter run \
+    --dart-define-from-file="$ENV_FILE"
+fi

@@ -43,8 +43,15 @@ jobs:
         run: flutter analyze
       - name: Run tests
         run: flutter test
+      # Build the Release APK and inject environment variables from GitHub Secrets
+      # Setup method: GitHub repo → Settings → Secrets and variables → Actions
+      # Add Secret: SENTRY_DSN = https://xxx@xxx.ingest.sentry.io/xxx
       - name: Build release APK
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release \
+            --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
+            --dart-define=APP_ENV=production \
+            --dart-define=APP_RELEASE=flutter-travel-audio-guide@${{ github.ref_name }}
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -55,7 +62,7 @@ jobs:
             1. 下載 `app-release.apk`
             2. 手機開啟「允許安裝未知來源應用程式」
             3. 安裝並執行
-
+            
             ### 更新內容
             請參考 CHANGELOG.md
           files: build/app/outputs/flutter-apk/app-release.apk

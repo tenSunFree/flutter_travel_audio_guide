@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
+import '../../../../core/monitoring/monitoring_service.dart';
 import '../../../../core/sync/app_sync_service.dart';
 import '../../../../core/sync/sync_providers.dart';
 import '../../di/audio_guide_providers.dart';
@@ -8,7 +9,7 @@ import '../../domain/entities/audio_guide.dart';
 import '../../domain/usecases/download_audio_guide_usecase.dart';
 import '../enums/sort_filter_enums.dart';
 
-/// State
+// State
 class AudioGuideListState {
   const AudioGuideListState({
     required this.allItems,
@@ -38,7 +39,6 @@ class AudioGuideListState {
       errorMessage: null,
       sortOrder: SortOrder.dateNewest,
       filterType: FilterType.all,
-      // Initial value is true (waiting for the first sync result)
       isSyncing: true,
     );
   }
@@ -54,7 +54,7 @@ class AudioGuideListState {
   final String? errorMessage;
   final SortOrder sortOrder;
   final FilterType filterType;
-  final bool isSyncing; // Is background synchronization in progress
+  final bool isSyncing;
 
   bool get isDefaultFilter =>
       sortOrder == SortOrder.dateNewest && filterType == FilterType.all;
@@ -119,7 +119,7 @@ class AudioGuideListState {
   }
 }
 
-/// Controller
+// Controller
 class AudioGuideListController extends StateNotifier<AudioGuideListState> {
   AudioGuideListController({
     required this.ref,
@@ -143,8 +143,8 @@ class AudioGuideListController extends StateNotifier<AudioGuideListState> {
       try {
         await ref.read(appSyncServiceProvider).syncAllIfNeeded();
       } catch (_) {
+        // syncAllIfNeeded internally reports through MonitoringService, so it's handled silently here.
       } finally {
-        // After syncing is complete (regardless of success or failure), close the skeleton screen.
         if (mounted) {
           state = state.copyWith(isSyncing: false);
         }
@@ -195,17 +195,66 @@ class AudioGuideListController extends StateNotifier<AudioGuideListState> {
   void resetSortFilter() =>
       applySortFilter(SortOrder.dateNewest, FilterType.all);
 
-  // download
+  // Critical business path: Audio download
+  // - breadcrumb records download start/success
+  // - monitorFuture establishes a performance transaction (operation: audio.download)
+  // - captureException reports a failure (including guide_id / title / url)
   Future<String?> downloadGuide(AudioGuide guide) async {
+    // Prevent duplicate downloads
+    if (state.downloadingIds.contains(guide.id)) {
+      return '該檔案正在下載中';
+    }
     state = state.copyWith(downloadingIds: {...state.downloadingIds, guide.id});
+    // breadcrumb: Record the start of download
+    await MonitoringService.addBreadcrumb(
+      message: 'Start audio guide download',
+      category: 'audio.download',
+      data: {
+        'guide_id': guide.id,
+        'guide_title': guide.title,
+        'url': guide.url,
+      },
+    );
     try {
-      final localPath = await _downloadAudioGuideUseCase(guide);
+      // performance transaction：audio.download
+      final localPath = await MonitoringService.monitorFuture<String>(
+        name: 'Audio Guide Download',
+        operation: 'audio.download',
+        description: guide.title,
+        extras: {
+          'guide_id': guide.id,
+          'guide_title': guide.title,
+          'url': guide.url,
+        },
+        action: () => _downloadAudioGuideUseCase(guide),
+      );
+      // Write back to Drift DB (mark as downloaded + save to local path)
       await ref
           .read(appDatabaseProvider)
           .audioGuideDao
           .markAsDownloaded(id: guide.id, localFilePath: localPath);
+      // breadcrumb: Record successful download
+      await MonitoringService.addBreadcrumb(
+        message: 'Audio guide download success',
+        category: 'audio.download',
+        data: {'guide_id': guide.id, 'local_path': localPath},
+      );
       return null;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Report to Sentry (already reported internally by monitorFuture, this is an additional context to report again)
+      // Note: monitorFuture has already rethrown, so captureException here is for supplementary explanation.
+      // In fact, monitorFuture also calls captureException internally.
+      // If you don't want to repeat this, you can remove this part and only keep return e.toString().
+      await MonitoringService.captureException(
+        e,
+        stackTrace: stackTrace,
+        operation: 'audio.download',
+        extras: {
+          'guide_id': guide.id,
+          'guide_title': guide.title,
+          'url': guide.url,
+        },
+      );
       return e.toString();
     } finally {
       final ids = {...state.downloadingIds}..remove(guide.id);
@@ -215,13 +264,12 @@ class AudioGuideListController extends StateNotifier<AudioGuideListState> {
 
   @override
   void dispose() {
-    // ignore() prevents the future from being pending.
     _sub?.cancel().ignore();
     super.dispose();
   }
 }
 
-/// Provider
+// Provider
 final audioGuideListControllerProvider =
     StateNotifierProvider<AudioGuideListController, AudioGuideListState>((ref) {
       return AudioGuideListController(

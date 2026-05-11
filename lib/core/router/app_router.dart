@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../features/activity/domain/entities/activity.dart';
 import '../../features/activity/presentation/pages/activity_detail_page.dart';
 import '../../features/attraction/domain/entities/attraction.dart';
@@ -10,7 +11,7 @@ import '../../features/audio_guide/presentation/pages/audio_guide_detail_page.da
 import '../../features/home/presentation/pages/main_tab_page.dart';
 import '../utils/app_log_page.dart';
 
-// ── Route path constants ──────────────────────────────────────────────────────
+// Route path constants
 class AppRoutes {
   const AppRoutes._();
 
@@ -25,6 +26,10 @@ class AppRoutes {
 final appRouter = GoRouter(
   initialLocation: AppRoutes.home,
   debugLogDiagnostics: kDebugMode,
+  observers: [
+    // navigation breadcrumb + TTID
+    SentryNavigatorObserver(),
+  ],
   routes: [
     GoRoute(
       path: AppRoutes.home,

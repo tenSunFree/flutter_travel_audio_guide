@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/monitoring/monitoring_service.dart';
 import '../../di/audio_guide_providers.dart';
 import '../../domain/entities/audio_playback_state.dart';
 import '../../domain/services/audio_playback_service.dart';
@@ -21,11 +22,44 @@ class AudioPlayerController extends StateNotifier<AudioPlaybackState> {
 
   StreamSubscription<AudioPlaybackState>? _subscription;
 
+  // Critical business path: Player initialization
+  // - Breadcrumb records the start of initialization
+  // - MonitorFuture establishes a performance transaction (operation: audio.player.initialize)
+  // - Failure: Do not rethrow (change to updating state), and simultaneously captureException report.
   Future<void> _init() async {
+    // First listen to the stream to ensure that all state changes during the initialization process are captured.
     _subscription = _service.stateStream.listen((playbackState) {
       state = playbackState;
     });
-    await _service.initialize(_path);
+    await MonitoringService.addBreadcrumb(
+      message: 'Start audio player initialization',
+      category: 'audio.player',
+      data: {'file_path': _path},
+    );
+    try {
+      await MonitoringService.monitorFuture<void>(
+        name: 'Audio Player Initialization',
+        operation: 'audio.player.initialize',
+        description: _path,
+        extras: {'file_path': _path},
+        action: () => _service.initialize(_path),
+      );
+      await MonitoringService.addBreadcrumb(
+        message: 'Audio player initialization success',
+        category: 'audio.player',
+        data: {'file_path': _path},
+      );
+    } catch (e) {
+      // Player initialization failure is a user-visible error and should not cause the controller to crash.
+      // The monitorFuture has already reported this to Sentry; only the UI state is updated here.
+      // (If you want double confirmation, you can call captureException again, but this is usually unnecessary.)
+      if (mounted) {
+        state = state.copyWith(
+          status: AudioPlaybackStatus.error,
+          errorMessage: '播放器初始化失敗：$e',
+        );
+      }
+    }
   }
 
   Future<void> togglePlayPause() async {
