@@ -89,6 +89,16 @@ This project is for learning and technical practice.
 - HTTP client with Dio and centralized request / response logging via Talker
 - Type-safe Android native method channels generated with Pigeon
 
+### Observability and Monitoring
+
+- Integrated Sentry for production-style error tracking and performance monitoring
+- Wrapped Sentry SDK behind a centralized `MonitoringService` to keep feature code decoupled from third-party observability SDKs
+- Instrumented key business flows with performance transactions: audio guide download, offline Drift cache synchronization, and audio player initialization
+- Captured contextual breadcrumbs and exception metadata to support debugging of user-facing failures
+- HTTP request breadcrumbs, failed request capture, and network tracing via `sentry_dio`
+- GoRouter navigation breadcrumbs and navigation-related performance traces via `SentryNavigatorObserver`
+- Sentry DSN injected at build time via `--dart-define-from-file`; local environment files are excluded from version control
+
 ---
 
 ## Tech Stack
@@ -109,6 +119,10 @@ This project is for learning and technical practice.
   Local persistence layer built on SQLite (Provides typed DAOs, reactive database streams, local caching, and offline browsing support)
 - go_router  
   Declarative routing solution (Centralizes navigation logic, manages detail page routing via `extra` object passing, and improves maintainability across feature modules)
+- sentry_flutter  
+  Error and performance monitoring SDK (Captures unhandled exceptions, breadcrumbs, app start metrics, slow and frozen frames, and custom transactions for key business flows)
+- sentry_dio  
+  Official Dio integration for Sentry (Captures HTTP breadcrumbs, failed requests, and network tracing data with Sentry performance tracing support)
 
 ---
 
