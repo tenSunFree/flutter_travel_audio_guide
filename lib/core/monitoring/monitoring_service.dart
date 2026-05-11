@@ -19,7 +19,7 @@ class MonitoringService {
           scope.setTag('operation', operation);
         }
         for (final entry in extras.entries) {
-          scope.setExtra(entry.key, entry.value);
+          scope.setTag(entry.key, entry.value.toString());
         }
       },
     );
