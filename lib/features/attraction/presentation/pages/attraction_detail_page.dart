@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/attraction.dart';
+import '../../../../core/widgets/detail_action_buttons.dart';
 
 class AttractionDetailPage extends StatelessWidget {
   const AttractionDetailPage({super.key, required this.attraction});
 
   final Attraction attraction;
+
+  static String _buildAttractionShareText(Attraction attraction) {
+    return [
+      attraction.name,
+      if (attraction.address.isNotEmpty) '地址：${attraction.address}',
+      if (attraction.openTime.isNotEmpty) '開放時間：${attraction.openTime}',
+      if (attraction.officialSite.isNotEmpty) attraction.officialSite,
+    ].join('\n');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +78,14 @@ class AttractionDetailPage extends StatelessWidget {
                   ),
                 if (attraction.remind.isNotEmpty)
                   _InfoRow(icon: Icons.info_outline, text: attraction.remind),
+                const SizedBox(height: 20),
+                DetailActionButtons(
+                  navigateName: attraction.name,
+                  navigateLat: attraction.nlat,
+                  navigateLng: attraction.elong,
+                  shareText: _buildAttractionShareText(attraction),
+                  shareLabel: '分享景點',
+                ),
                 const SizedBox(height: 20),
                 const Divider(color: AppColors.divider),
                 const SizedBox(height: 16),

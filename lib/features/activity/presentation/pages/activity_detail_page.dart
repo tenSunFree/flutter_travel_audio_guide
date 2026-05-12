@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/activity.dart';
+import '../../../../core/widgets/detail_action_buttons.dart';
 
 class ActivityDetailPage extends StatefulWidget {
   const ActivityDetailPage({super.key, required this.activity});
@@ -133,6 +134,24 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
       if (activityUrl.isNotEmpty) activityUrl,
     ];
     await SharePlus.instance.share(ShareParams(text: lines.join('\n')));
+  }
+
+  // The activity coordinates are of type String and need to be converted.
+  static double? _parseCoord(String value) {
+    final v = double.tryParse(value.trim());
+    return (v == null || v == 0.0) ? null : v;
+  }
+
+  String _buildActivityShareText() {
+    final beginStr = _formatDate(activity.begin);
+    final endStr = _formatDate(activity.end);
+    final url = _toAbsoluteUrl(activity.url);
+    return [
+      activity.title,
+      if (beginStr.isNotEmpty || endStr.isNotEmpty) '展期：$beginStr ～ $endStr',
+      if (activity.address.isNotEmpty) '地點：${activity.address}',
+      if (url.isNotEmpty) url,
+    ].join('\n');
   }
 
   Future<void> _callPhone() async {
@@ -270,22 +289,32 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               ),
             const SizedBox(height: 16),
             // Calendar + Share side by side (below meta tag, above body text)
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _addToCalendar,
-                    icon: const Icon(Icons.event_available_outlined, size: 18),
-                    label: const Text('加入行事曆'),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _addToCalendar,
+                  icon: const Icon(Icons.event_available_outlined, size: 18),
+                  label: const Text(
+                    '加入行事曆',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _shareActivity,
-                    icon: const Icon(Icons.share_outlined, size: 18),
-                    label: const Text('分享活動'),
-                  ),
+                const SizedBox(height: 10),
+                DetailActionButtons(
+                  navigateName: activity.address.isNotEmpty
+                      ? activity.address
+                      : activity.title,
+                  navigateLat: _parseCoord(activity.nlat),
+                  navigateLng: _parseCoord(activity.elong),
+                  shareText: _buildActivityShareText(),
+                  shareLabel: '分享活動',
                 ),
               ],
             ),

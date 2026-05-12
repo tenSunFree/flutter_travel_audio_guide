@@ -14,6 +14,8 @@ import '../widgets/playback_card.dart';
 import '../widgets/practical_info_section.dart';
 import '../widgets/introduction_section.dart';
 import '../widgets/step_count_badge.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../../core/widgets/detail_action_buttons.dart';
 
 class AudioGuideDetailPage extends ConsumerStatefulWidget {
   const AudioGuideDetailPage({super.key, required this.guide});
@@ -26,6 +28,17 @@ class AudioGuideDetailPage extends ConsumerStatefulWidget {
 }
 
 class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
+  // guide.url is an MP3 file link, not suitable for external sharing;
+  // Prioritize using the official website of the matched attraction, and omit links if necessary.
+  String _buildGuideShareText(String pageTitle, Attraction? attraction) {
+    return [
+      pageTitle,
+      if (attraction?.address.isNotEmpty ?? false) '地址：${attraction!.address}',
+      if (attraction?.officialSite.isNotEmpty ?? false)
+        attraction!.officialSite,
+    ].join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     final localPath = widget.guide.localFilePath;
@@ -73,6 +86,16 @@ class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
             onSeek: controller.seek,
           ),
           PracticalInfoSection(attraction: attraction),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: DetailActionButtons(
+              navigateName: attraction?.name ?? pageTitle,
+              navigateLat: attraction?.nlat,
+              navigateLng: attraction?.elong,
+              shareText: _buildGuideShareText(pageTitle, attraction),
+              shareLabel: '分享導覽',
+            ),
+          ),
           if (stepState.isAvailable &&
               stepState.hasHealthConnectPermission &&
               stepState.hasSensorPermission)
