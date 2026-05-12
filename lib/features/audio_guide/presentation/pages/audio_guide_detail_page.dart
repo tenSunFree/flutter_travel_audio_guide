@@ -14,7 +14,6 @@ import '../widgets/playback_card.dart';
 import '../widgets/practical_info_section.dart';
 import '../widgets/introduction_section.dart';
 import '../widgets/step_count_badge.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../../../core/widgets/detail_action_buttons.dart';
 
 class AudioGuideDetailPage extends ConsumerStatefulWidget {

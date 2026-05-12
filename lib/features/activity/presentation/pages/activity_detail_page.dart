@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/activity.dart';
@@ -121,19 +120,6 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
     final success = await Add2Calendar.addEvent2Cal(event);
     if (!mounted) return;
     _showSnackBar(success ? '已開啟行事曆新增流程' : '無法加入行事曆');
-  }
-
-  Future<void> _shareActivity() async {
-    final beginStr = _formatDate(activity.begin);
-    final endStr = _formatDate(activity.end);
-    final activityUrl = _toAbsoluteUrl(activity.url);
-    final lines = [
-      activity.title,
-      if (beginStr.isNotEmpty || endStr.isNotEmpty) '展期：$beginStr ～ $endStr',
-      if (activity.address.isNotEmpty) '地點：${activity.address}',
-      if (activityUrl.isNotEmpty) activityUrl,
-    ];
-    await SharePlus.instance.share(ShareParams(text: lines.join('\n')));
   }
 
   // The activity coordinates are of type String and need to be converted.
