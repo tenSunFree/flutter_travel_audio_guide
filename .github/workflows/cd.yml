@@ -2,12 +2,10 @@ name: Flutter CD
 
 on:
   push:
-    # Only triggers in v1.0.0 format
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
 
 permissions:
-  # This is required to create a GitHub Release; otherwise, you'll get a 403 error.
   contents: write
 
 concurrency:
@@ -21,30 +19,35 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Keep it consistent with ci.yml
           flutter-version: '3.41.9'
           channel: stable
           cache: true
+
       - name: Show Flutter & Dart version
         run: flutter --version
+
       - name: Install dependencies
         run: flutter pub get
+
       - name: Check Dart format
         run: dart format --output=none --set-exit-if-changed lib test pigeons
+
       - name: Static analysis
         run: flutter analyze
+
       - name: Run tests
         run: flutter test
-      # Build the Release APK and inject environment variables from GitHub Secrets
-      # Setup method: GitHub repo → Settings → Secrets and variables → Actions
+
       # Add Secret: SENTRY_DSN = https://xxx@xxx.ingest.sentry.io/xxx
       - name: Build release APK
         run: |
@@ -52,19 +55,49 @@ jobs:
             --dart-define=SENTRY_DSN=${{ secrets.SENTRY_DSN }} \
             --dart-define=APP_ENV=production \
             --dart-define=APP_RELEASE=flutter-travel-audio-guide@${{ github.ref_name }}
+
+      - name: Extract changelog for current version
+        id: changelog
+        run: |
+          VERSION="${{ github.ref_name }}"
+               
+          # Extract the corresponding version paragraph from CHANGELOG.md
+          # Format: ## v1.0.1 (without parentheses, consistent with git tag format)
+          # -v Pass in a variable to avoid shell injection issues
+          awk -v version="$VERSION" '
+            /^## / {
+              if (found) exit
+              if ($2 == version) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+
+          # Provide a clear message when the version cannot be found to avoid blank Release content.
+          if [ ! -s release_notes.md ]; then
+            echo "未找到 ${VERSION} 的更新內容，請確認 CHANGELOG.md 已更新" > release_notes.md
+          fi
+
+          # Write to GITHUB_OUTPUT (multiline standard format)
+          {
+            echo 'body<<EOF'
+            cat release_notes.md
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: Release ${{ github.ref_name }}
           body: |
             ## 版本 ${{ github.ref_name }}
+
+            ### 更新內容
+            ${{ steps.changelog.outputs.body }}
+
             ### 安裝方式
             1. 下載 `app-release.apk`
             2. 手機開啟「允許安裝未知來源應用程式」
             3. 安裝並執行
-            
-            ### 更新內容
-            請參考 CHANGELOG.md
           files: build/app/outputs/flutter-apk/app-release.apk
           draft: false
           prerelease: false
