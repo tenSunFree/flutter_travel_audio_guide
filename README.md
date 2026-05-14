@@ -30,13 +30,18 @@ This project is for learning and technical practice.
 </p> 
 <p align="left">
   <img src="https://i.postimg.cc/J0hjBxjq/Screenshot-20260506-014016.png" width="160"/>
-  <img src="https://i.postimg.cc/N0HP6CVt/Screenshot-20260512-214737.png" width="160"/>
-  <img src="https://i.postimg.cc/qqkbdJ7n/Screenshot-20260512-214747.png" width="160"/>
+  <img src="https://i.postimg.cc/3w8WGKTT/2.png" width="160"/>
+  <img src="https://i.postimg.cc/YSd0fJpV/3.png" width="160"/>
+  <img src="https://i.postimg.cc/QM8V7X3r/4.png" width="160"/>
 </p> 
 <p align="left">
   <img src="https://i.postimg.cc/zvfTR7T0/Screenshot-20260506-014013.png" width="160"/>
   <img src="https://i.postimg.cc/5Ns3cK1B/368412.jpg" width="160"/>
   <img src="https://i.postimg.cc/2y2Hksq4/Screenshot-20260512-214810.png" width="160"/>
+</p> 
+<p align="left">
+  <img src="https://i.postimg.cc/9fmz9WjS/5.png" width="160"/>
+  <img src="https://i.postimg.cc/k5RgrwK1/Screenshot-20260514-125214.png" width="160"/>
 </p> 
 
 ---
@@ -99,6 +104,16 @@ This project is for learning and technical practice.
 - GoRouter navigation breadcrumbs and navigation-related performance traces via `SentryNavigatorObserver`
 - Sentry DSN injected at build time via `--dart-define-from-file`; local environment files are excluded from version control
 
+### Journey Reminder
+
+- Set local reminders for activities and manage them in a personal journey list
+- Persist reminder records in the local Drift database for offline access and state recovery
+- Schedule offline-capable local notifications for upcoming activities
+- Support preset reminder lead times (on time, 5 minutes, 15 minutes, 30 minutes, 1 hour, or 1 day before) and a custom duration input
+- Validate activity date ranges to prevent reminders from being created after an event has ended
+- Handle Android exact alarm restrictions by falling back to inexact scheduling when exact alarm permission is unavailable
+- Restore scheduled notifications after device reboot through Android boot receiver configuration
+
 ---
 
 ## Tech Stack
@@ -123,6 +138,12 @@ This project is for learning and technical practice.
   Error and performance monitoring SDK (Captures unhandled exceptions, breadcrumbs, app start metrics, slow and frozen frames, and custom transactions for key business flows)
 - sentry_dio  
   Official Dio integration for Sentry (Captures HTTP breadcrumbs, failed requests, and network tracing data with Sentry performance tracing support)
+- flutter_local_notifications  
+  Local notification scheduling (Schedules offline-capable activity reminders with timezone-aware delivery and Android alarm mode handling)
+- timezone  
+  Timezone-aware scheduling utility (Ensures reminder times are converted and scheduled consistently in the local timezone)
+- permission_handler  
+  Permission handling utility (Manages runtime permission requests for calendar write access when adding activity events to the native calendar)
 
 ---
 
