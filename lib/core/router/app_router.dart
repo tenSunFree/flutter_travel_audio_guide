@@ -16,9 +16,15 @@ class AppRoutes {
   const AppRoutes._();
 
   static const home = '/';
-  static const attractionDetail = '/attraction/detail';
-  static const activityDetail = '/activity/detail';
-  static const audioGuideDetail = '/audio-guide/detail';
+  static const attractionDetail = '/attractions/:id';
+  static const activityDetail = '/activities/:id';
+  static const audioGuideDetail = '/audio-guides/:id';
+
+  static String attractionDetailPath(int id) => '/attractions/$id';
+
+  static String activityDetailPath(int id) => '/activities/$id';
+
+  static String audioGuideDetailPath(int id) => '/audio-guides/$id';
   static const appLog = '/debug/log';
 }
 
@@ -27,7 +33,7 @@ final appRouter = GoRouter(
   initialLocation: AppRoutes.home,
   debugLogDiagnostics: kDebugMode,
   observers: [
-    // navigation breadcrumb + TTID
+    // Track navigation breadcrumbs in Sentry for easier crash/error debugging.
     SentryNavigatorObserver(),
   ],
   routes: [

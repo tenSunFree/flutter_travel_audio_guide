@@ -93,6 +93,8 @@ class _AudioGuideDetailPageState extends ConsumerState<AudioGuideDetailPage> {
               navigateLng: attraction?.elong,
               shareText: _buildGuideShareText(pageTitle, attraction),
               shareLabel: '分享導覽',
+              onReminderPressed: () {},
+              onCalendarPressed: () {},
             ),
           ),
           if (stepState.isAvailable &&

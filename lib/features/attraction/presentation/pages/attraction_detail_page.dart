@@ -85,6 +85,8 @@ class AttractionDetailPage extends StatelessWidget {
                   navigateLng: attraction.elong,
                   shareText: _buildAttractionShareText(attraction),
                   shareLabel: '分享景點',
+                  onReminderPressed: () {},
+                  onCalendarPressed: () {},
                 ),
                 const SizedBox(height: 20),
                 const Divider(color: AppColors.divider),

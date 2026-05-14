@@ -78,7 +78,10 @@ class _AttractionListPageState extends ConsumerState<AttractionListPage> {
   }
 
   void _openDetail(Attraction attraction) {
-    context.push(AppRoutes.attractionDetail, extra: attraction);
+    context.push(
+      AppRoutes.attractionDetailPath(attraction.id),
+      extra: attraction,
+    );
   }
 
   @override

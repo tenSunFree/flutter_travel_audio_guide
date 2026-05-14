@@ -2981,6 +2981,964 @@ class SyncMetaTableCompanion extends UpdateCompanion<SyncMetaTableData> {
   }
 }
 
+class $ReminderTableTable extends ReminderTable
+    with TableInfo<$ReminderTableTable, ReminderTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ReminderTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceIdMeta = const VerificationMeta(
+    'sourceId',
+  );
+  @override
+  late final GeneratedColumn<String> sourceId = GeneratedColumn<String>(
+    'source_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+    'title',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _subtitleMeta = const VerificationMeta(
+    'subtitle',
+  );
+  @override
+  late final GeneratedColumn<String> subtitle = GeneratedColumn<String>(
+    'subtitle',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _imageUrlMeta = const VerificationMeta(
+    'imageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> imageUrl = GeneratedColumn<String>(
+    'image_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addressMeta = const VerificationMeta(
+    'address',
+  );
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+    'address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _targetTimeMeta = const VerificationMeta(
+    'targetTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> targetTime = GeneratedColumn<DateTime>(
+    'target_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _remindBeforeSecondsMeta =
+      const VerificationMeta('remindBeforeSeconds');
+  @override
+  late final GeneratedColumn<int> remindBeforeSeconds = GeneratedColumn<int>(
+    'remind_before_seconds',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _notifyTimeMeta = const VerificationMeta(
+    'notifyTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> notifyTime = GeneratedColumn<DateTime>(
+    'notify_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _notificationIdMeta = const VerificationMeta(
+    'notificationId',
+  );
+  @override
+  late final GeneratedColumn<int> notificationId = GeneratedColumn<int>(
+    'notification_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _routePathMeta = const VerificationMeta(
+    'routePath',
+  );
+  @override
+  late final GeneratedColumn<String> routePath = GeneratedColumn<String>(
+    'route_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _payloadJsonMeta = const VerificationMeta(
+    'payloadJson',
+  );
+  @override
+  late final GeneratedColumn<String> payloadJson = GeneratedColumn<String>(
+    'payload_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isEnabledMeta = const VerificationMeta(
+    'isEnabled',
+  );
+  @override
+  late final GeneratedColumn<bool> isEnabled = GeneratedColumn<bool>(
+    'is_enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_enabled" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _isDoneMeta = const VerificationMeta('isDone');
+  @override
+  late final GeneratedColumn<bool> isDone = GeneratedColumn<bool>(
+    'is_done',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_done" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sourceType,
+    sourceId,
+    title,
+    subtitle,
+    imageUrl,
+    address,
+    targetTime,
+    remindBeforeSeconds,
+    notifyTime,
+    notificationId,
+    routePath,
+    payloadJson,
+    isEnabled,
+    isDone,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'reminder_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ReminderTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceTypeMeta);
+    }
+    if (data.containsKey('source_id')) {
+      context.handle(
+        _sourceIdMeta,
+        sourceId.isAcceptableOrUnknown(data['source_id']!, _sourceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceIdMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+        _titleMeta,
+        title.isAcceptableOrUnknown(data['title']!, _titleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('subtitle')) {
+      context.handle(
+        _subtitleMeta,
+        subtitle.isAcceptableOrUnknown(data['subtitle']!, _subtitleMeta),
+      );
+    }
+    if (data.containsKey('image_url')) {
+      context.handle(
+        _imageUrlMeta,
+        imageUrl.isAcceptableOrUnknown(data['image_url']!, _imageUrlMeta),
+      );
+    }
+    if (data.containsKey('address')) {
+      context.handle(
+        _addressMeta,
+        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+      );
+    }
+    if (data.containsKey('target_time')) {
+      context.handle(
+        _targetTimeMeta,
+        targetTime.isAcceptableOrUnknown(data['target_time']!, _targetTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_targetTimeMeta);
+    }
+    if (data.containsKey('remind_before_seconds')) {
+      context.handle(
+        _remindBeforeSecondsMeta,
+        remindBeforeSeconds.isAcceptableOrUnknown(
+          data['remind_before_seconds']!,
+          _remindBeforeSecondsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notify_time')) {
+      context.handle(
+        _notifyTimeMeta,
+        notifyTime.isAcceptableOrUnknown(data['notify_time']!, _notifyTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_notifyTimeMeta);
+    }
+    if (data.containsKey('notification_id')) {
+      context.handle(
+        _notificationIdMeta,
+        notificationId.isAcceptableOrUnknown(
+          data['notification_id']!,
+          _notificationIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_notificationIdMeta);
+    }
+    if (data.containsKey('route_path')) {
+      context.handle(
+        _routePathMeta,
+        routePath.isAcceptableOrUnknown(data['route_path']!, _routePathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_routePathMeta);
+    }
+    if (data.containsKey('payload_json')) {
+      context.handle(
+        _payloadJsonMeta,
+        payloadJson.isAcceptableOrUnknown(
+          data['payload_json']!,
+          _payloadJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadJsonMeta);
+    }
+    if (data.containsKey('is_enabled')) {
+      context.handle(
+        _isEnabledMeta,
+        isEnabled.isAcceptableOrUnknown(data['is_enabled']!, _isEnabledMeta),
+      );
+    }
+    if (data.containsKey('is_done')) {
+      context.handle(
+        _isDoneMeta,
+        isDone.isAcceptableOrUnknown(data['is_done']!, _isDoneMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ReminderTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ReminderTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      )!,
+      sourceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      subtitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subtitle'],
+      ),
+      imageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}image_url'],
+      ),
+      address: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}address'],
+      ),
+      targetTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}target_time'],
+      )!,
+      remindBeforeSeconds: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}remind_before_seconds'],
+      )!,
+      notifyTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}notify_time'],
+      )!,
+      notificationId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}notification_id'],
+      )!,
+      routePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}route_path'],
+      )!,
+      payloadJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload_json'],
+      )!,
+      isEnabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_enabled'],
+      )!,
+      isDone: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_done'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+    );
+  }
+
+  @override
+  $ReminderTableTable createAlias(String alias) {
+    return $ReminderTableTable(attachedDatabase, alias);
+  }
+}
+
+class ReminderTableData extends DataClass
+    implements Insertable<ReminderTableData> {
+  final int id;
+  final String sourceType;
+  final String sourceId;
+  final String title;
+  final String? subtitle;
+  final String? imageUrl;
+  final String? address;
+  final DateTime targetTime;
+  final int remindBeforeSeconds;
+  final DateTime notifyTime;
+  final int notificationId;
+  final String routePath;
+  final String payloadJson;
+  final bool isEnabled;
+  final bool isDone;
+  final DateTime createdAt;
+  final DateTime? updatedAt;
+  const ReminderTableData({
+    required this.id,
+    required this.sourceType,
+    required this.sourceId,
+    required this.title,
+    this.subtitle,
+    this.imageUrl,
+    this.address,
+    required this.targetTime,
+    required this.remindBeforeSeconds,
+    required this.notifyTime,
+    required this.notificationId,
+    required this.routePath,
+    required this.payloadJson,
+    required this.isEnabled,
+    required this.isDone,
+    required this.createdAt,
+    this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['source_type'] = Variable<String>(sourceType);
+    map['source_id'] = Variable<String>(sourceId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || subtitle != null) {
+      map['subtitle'] = Variable<String>(subtitle);
+    }
+    if (!nullToAbsent || imageUrl != null) {
+      map['image_url'] = Variable<String>(imageUrl);
+    }
+    if (!nullToAbsent || address != null) {
+      map['address'] = Variable<String>(address);
+    }
+    map['target_time'] = Variable<DateTime>(targetTime);
+    map['remind_before_seconds'] = Variable<int>(remindBeforeSeconds);
+    map['notify_time'] = Variable<DateTime>(notifyTime);
+    map['notification_id'] = Variable<int>(notificationId);
+    map['route_path'] = Variable<String>(routePath);
+    map['payload_json'] = Variable<String>(payloadJson);
+    map['is_enabled'] = Variable<bool>(isEnabled);
+    map['is_done'] = Variable<bool>(isDone);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    return map;
+  }
+
+  ReminderTableCompanion toCompanion(bool nullToAbsent) {
+    return ReminderTableCompanion(
+      id: Value(id),
+      sourceType: Value(sourceType),
+      sourceId: Value(sourceId),
+      title: Value(title),
+      subtitle: subtitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subtitle),
+      imageUrl: imageUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imageUrl),
+      address: address == null && nullToAbsent
+          ? const Value.absent()
+          : Value(address),
+      targetTime: Value(targetTime),
+      remindBeforeSeconds: Value(remindBeforeSeconds),
+      notifyTime: Value(notifyTime),
+      notificationId: Value(notificationId),
+      routePath: Value(routePath),
+      payloadJson: Value(payloadJson),
+      isEnabled: Value(isEnabled),
+      isDone: Value(isDone),
+      createdAt: Value(createdAt),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+    );
+  }
+
+  factory ReminderTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ReminderTableData(
+      id: serializer.fromJson<int>(json['id']),
+      sourceType: serializer.fromJson<String>(json['sourceType']),
+      sourceId: serializer.fromJson<String>(json['sourceId']),
+      title: serializer.fromJson<String>(json['title']),
+      subtitle: serializer.fromJson<String?>(json['subtitle']),
+      imageUrl: serializer.fromJson<String?>(json['imageUrl']),
+      address: serializer.fromJson<String?>(json['address']),
+      targetTime: serializer.fromJson<DateTime>(json['targetTime']),
+      remindBeforeSeconds: serializer.fromJson<int>(
+        json['remindBeforeSeconds'],
+      ),
+      notifyTime: serializer.fromJson<DateTime>(json['notifyTime']),
+      notificationId: serializer.fromJson<int>(json['notificationId']),
+      routePath: serializer.fromJson<String>(json['routePath']),
+      payloadJson: serializer.fromJson<String>(json['payloadJson']),
+      isEnabled: serializer.fromJson<bool>(json['isEnabled']),
+      isDone: serializer.fromJson<bool>(json['isDone']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'sourceType': serializer.toJson<String>(sourceType),
+      'sourceId': serializer.toJson<String>(sourceId),
+      'title': serializer.toJson<String>(title),
+      'subtitle': serializer.toJson<String?>(subtitle),
+      'imageUrl': serializer.toJson<String?>(imageUrl),
+      'address': serializer.toJson<String?>(address),
+      'targetTime': serializer.toJson<DateTime>(targetTime),
+      'remindBeforeSeconds': serializer.toJson<int>(remindBeforeSeconds),
+      'notifyTime': serializer.toJson<DateTime>(notifyTime),
+      'notificationId': serializer.toJson<int>(notificationId),
+      'routePath': serializer.toJson<String>(routePath),
+      'payloadJson': serializer.toJson<String>(payloadJson),
+      'isEnabled': serializer.toJson<bool>(isEnabled),
+      'isDone': serializer.toJson<bool>(isDone),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+    };
+  }
+
+  ReminderTableData copyWith({
+    int? id,
+    String? sourceType,
+    String? sourceId,
+    String? title,
+    Value<String?> subtitle = const Value.absent(),
+    Value<String?> imageUrl = const Value.absent(),
+    Value<String?> address = const Value.absent(),
+    DateTime? targetTime,
+    int? remindBeforeSeconds,
+    DateTime? notifyTime,
+    int? notificationId,
+    String? routePath,
+    String? payloadJson,
+    bool? isEnabled,
+    bool? isDone,
+    DateTime? createdAt,
+    Value<DateTime?> updatedAt = const Value.absent(),
+  }) => ReminderTableData(
+    id: id ?? this.id,
+    sourceType: sourceType ?? this.sourceType,
+    sourceId: sourceId ?? this.sourceId,
+    title: title ?? this.title,
+    subtitle: subtitle.present ? subtitle.value : this.subtitle,
+    imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
+    address: address.present ? address.value : this.address,
+    targetTime: targetTime ?? this.targetTime,
+    remindBeforeSeconds: remindBeforeSeconds ?? this.remindBeforeSeconds,
+    notifyTime: notifyTime ?? this.notifyTime,
+    notificationId: notificationId ?? this.notificationId,
+    routePath: routePath ?? this.routePath,
+    payloadJson: payloadJson ?? this.payloadJson,
+    isEnabled: isEnabled ?? this.isEnabled,
+    isDone: isDone ?? this.isDone,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+  );
+  ReminderTableData copyWithCompanion(ReminderTableCompanion data) {
+    return ReminderTableData(
+      id: data.id.present ? data.id.value : this.id,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
+      sourceId: data.sourceId.present ? data.sourceId.value : this.sourceId,
+      title: data.title.present ? data.title.value : this.title,
+      subtitle: data.subtitle.present ? data.subtitle.value : this.subtitle,
+      imageUrl: data.imageUrl.present ? data.imageUrl.value : this.imageUrl,
+      address: data.address.present ? data.address.value : this.address,
+      targetTime: data.targetTime.present
+          ? data.targetTime.value
+          : this.targetTime,
+      remindBeforeSeconds: data.remindBeforeSeconds.present
+          ? data.remindBeforeSeconds.value
+          : this.remindBeforeSeconds,
+      notifyTime: data.notifyTime.present
+          ? data.notifyTime.value
+          : this.notifyTime,
+      notificationId: data.notificationId.present
+          ? data.notificationId.value
+          : this.notificationId,
+      routePath: data.routePath.present ? data.routePath.value : this.routePath,
+      payloadJson: data.payloadJson.present
+          ? data.payloadJson.value
+          : this.payloadJson,
+      isEnabled: data.isEnabled.present ? data.isEnabled.value : this.isEnabled,
+      isDone: data.isDone.present ? data.isDone.value : this.isDone,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReminderTableData(')
+          ..write('id: $id, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('title: $title, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('imageUrl: $imageUrl, ')
+          ..write('address: $address, ')
+          ..write('targetTime: $targetTime, ')
+          ..write('remindBeforeSeconds: $remindBeforeSeconds, ')
+          ..write('notifyTime: $notifyTime, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('routePath: $routePath, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('isDone: $isDone, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sourceType,
+    sourceId,
+    title,
+    subtitle,
+    imageUrl,
+    address,
+    targetTime,
+    remindBeforeSeconds,
+    notifyTime,
+    notificationId,
+    routePath,
+    payloadJson,
+    isEnabled,
+    isDone,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ReminderTableData &&
+          other.id == this.id &&
+          other.sourceType == this.sourceType &&
+          other.sourceId == this.sourceId &&
+          other.title == this.title &&
+          other.subtitle == this.subtitle &&
+          other.imageUrl == this.imageUrl &&
+          other.address == this.address &&
+          other.targetTime == this.targetTime &&
+          other.remindBeforeSeconds == this.remindBeforeSeconds &&
+          other.notifyTime == this.notifyTime &&
+          other.notificationId == this.notificationId &&
+          other.routePath == this.routePath &&
+          other.payloadJson == this.payloadJson &&
+          other.isEnabled == this.isEnabled &&
+          other.isDone == this.isDone &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class ReminderTableCompanion extends UpdateCompanion<ReminderTableData> {
+  final Value<int> id;
+  final Value<String> sourceType;
+  final Value<String> sourceId;
+  final Value<String> title;
+  final Value<String?> subtitle;
+  final Value<String?> imageUrl;
+  final Value<String?> address;
+  final Value<DateTime> targetTime;
+  final Value<int> remindBeforeSeconds;
+  final Value<DateTime> notifyTime;
+  final Value<int> notificationId;
+  final Value<String> routePath;
+  final Value<String> payloadJson;
+  final Value<bool> isEnabled;
+  final Value<bool> isDone;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> updatedAt;
+  const ReminderTableCompanion({
+    this.id = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.sourceId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.subtitle = const Value.absent(),
+    this.imageUrl = const Value.absent(),
+    this.address = const Value.absent(),
+    this.targetTime = const Value.absent(),
+    this.remindBeforeSeconds = const Value.absent(),
+    this.notifyTime = const Value.absent(),
+    this.notificationId = const Value.absent(),
+    this.routePath = const Value.absent(),
+    this.payloadJson = const Value.absent(),
+    this.isEnabled = const Value.absent(),
+    this.isDone = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  ReminderTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String sourceType,
+    required String sourceId,
+    required String title,
+    this.subtitle = const Value.absent(),
+    this.imageUrl = const Value.absent(),
+    this.address = const Value.absent(),
+    required DateTime targetTime,
+    this.remindBeforeSeconds = const Value.absent(),
+    required DateTime notifyTime,
+    required int notificationId,
+    required String routePath,
+    required String payloadJson,
+    this.isEnabled = const Value.absent(),
+    this.isDone = const Value.absent(),
+    required DateTime createdAt,
+    this.updatedAt = const Value.absent(),
+  }) : sourceType = Value(sourceType),
+       sourceId = Value(sourceId),
+       title = Value(title),
+       targetTime = Value(targetTime),
+       notifyTime = Value(notifyTime),
+       notificationId = Value(notificationId),
+       routePath = Value(routePath),
+       payloadJson = Value(payloadJson),
+       createdAt = Value(createdAt);
+  static Insertable<ReminderTableData> custom({
+    Expression<int>? id,
+    Expression<String>? sourceType,
+    Expression<String>? sourceId,
+    Expression<String>? title,
+    Expression<String>? subtitle,
+    Expression<String>? imageUrl,
+    Expression<String>? address,
+    Expression<DateTime>? targetTime,
+    Expression<int>? remindBeforeSeconds,
+    Expression<DateTime>? notifyTime,
+    Expression<int>? notificationId,
+    Expression<String>? routePath,
+    Expression<String>? payloadJson,
+    Expression<bool>? isEnabled,
+    Expression<bool>? isDone,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sourceType != null) 'source_type': sourceType,
+      if (sourceId != null) 'source_id': sourceId,
+      if (title != null) 'title': title,
+      if (subtitle != null) 'subtitle': subtitle,
+      if (imageUrl != null) 'image_url': imageUrl,
+      if (address != null) 'address': address,
+      if (targetTime != null) 'target_time': targetTime,
+      if (remindBeforeSeconds != null)
+        'remind_before_seconds': remindBeforeSeconds,
+      if (notifyTime != null) 'notify_time': notifyTime,
+      if (notificationId != null) 'notification_id': notificationId,
+      if (routePath != null) 'route_path': routePath,
+      if (payloadJson != null) 'payload_json': payloadJson,
+      if (isEnabled != null) 'is_enabled': isEnabled,
+      if (isDone != null) 'is_done': isDone,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  ReminderTableCompanion copyWith({
+    Value<int>? id,
+    Value<String>? sourceType,
+    Value<String>? sourceId,
+    Value<String>? title,
+    Value<String?>? subtitle,
+    Value<String?>? imageUrl,
+    Value<String?>? address,
+    Value<DateTime>? targetTime,
+    Value<int>? remindBeforeSeconds,
+    Value<DateTime>? notifyTime,
+    Value<int>? notificationId,
+    Value<String>? routePath,
+    Value<String>? payloadJson,
+    Value<bool>? isEnabled,
+    Value<bool>? isDone,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? updatedAt,
+  }) {
+    return ReminderTableCompanion(
+      id: id ?? this.id,
+      sourceType: sourceType ?? this.sourceType,
+      sourceId: sourceId ?? this.sourceId,
+      title: title ?? this.title,
+      subtitle: subtitle ?? this.subtitle,
+      imageUrl: imageUrl ?? this.imageUrl,
+      address: address ?? this.address,
+      targetTime: targetTime ?? this.targetTime,
+      remindBeforeSeconds: remindBeforeSeconds ?? this.remindBeforeSeconds,
+      notifyTime: notifyTime ?? this.notifyTime,
+      notificationId: notificationId ?? this.notificationId,
+      routePath: routePath ?? this.routePath,
+      payloadJson: payloadJson ?? this.payloadJson,
+      isEnabled: isEnabled ?? this.isEnabled,
+      isDone: isDone ?? this.isDone,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (sourceId.present) {
+      map['source_id'] = Variable<String>(sourceId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (subtitle.present) {
+      map['subtitle'] = Variable<String>(subtitle.value);
+    }
+    if (imageUrl.present) {
+      map['image_url'] = Variable<String>(imageUrl.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (targetTime.present) {
+      map['target_time'] = Variable<DateTime>(targetTime.value);
+    }
+    if (remindBeforeSeconds.present) {
+      map['remind_before_seconds'] = Variable<int>(remindBeforeSeconds.value);
+    }
+    if (notifyTime.present) {
+      map['notify_time'] = Variable<DateTime>(notifyTime.value);
+    }
+    if (notificationId.present) {
+      map['notification_id'] = Variable<int>(notificationId.value);
+    }
+    if (routePath.present) {
+      map['route_path'] = Variable<String>(routePath.value);
+    }
+    if (payloadJson.present) {
+      map['payload_json'] = Variable<String>(payloadJson.value);
+    }
+    if (isEnabled.present) {
+      map['is_enabled'] = Variable<bool>(isEnabled.value);
+    }
+    if (isDone.present) {
+      map['is_done'] = Variable<bool>(isDone.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ReminderTableCompanion(')
+          ..write('id: $id, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('sourceId: $sourceId, ')
+          ..write('title: $title, ')
+          ..write('subtitle: $subtitle, ')
+          ..write('imageUrl: $imageUrl, ')
+          ..write('address: $address, ')
+          ..write('targetTime: $targetTime, ')
+          ..write('remindBeforeSeconds: $remindBeforeSeconds, ')
+          ..write('notifyTime: $notifyTime, ')
+          ..write('notificationId: $notificationId, ')
+          ..write('routePath: $routePath, ')
+          ..write('payloadJson: $payloadJson, ')
+          ..write('isEnabled: $isEnabled, ')
+          ..write('isDone: $isDone, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2992,10 +3950,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $ActivityTableTable activityTable = $ActivityTableTable(this);
   late final $SyncMetaTableTable syncMetaTable = $SyncMetaTableTable(this);
+  late final $ReminderTableTable reminderTable = $ReminderTableTable(this);
   late final AttractionDao attractionDao = AttractionDao(this as AppDatabase);
   late final AudioGuideDao audioGuideDao = AudioGuideDao(this as AppDatabase);
   late final ActivityDao activityDao = ActivityDao(this as AppDatabase);
   late final SyncMetaDao syncMetaDao = SyncMetaDao(this as AppDatabase);
+  late final ReminderDao reminderDao = ReminderDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3005,6 +3965,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     audioGuideTable,
     activityTable,
     syncMetaTable,
+    reminderTable,
   ];
 }
 
@@ -4448,6 +5409,444 @@ typedef $$SyncMetaTableTableProcessedTableManager =
       SyncMetaTableData,
       PrefetchHooks Function()
     >;
+typedef $$ReminderTableTableCreateCompanionBuilder =
+    ReminderTableCompanion Function({
+      Value<int> id,
+      required String sourceType,
+      required String sourceId,
+      required String title,
+      Value<String?> subtitle,
+      Value<String?> imageUrl,
+      Value<String?> address,
+      required DateTime targetTime,
+      Value<int> remindBeforeSeconds,
+      required DateTime notifyTime,
+      required int notificationId,
+      required String routePath,
+      required String payloadJson,
+      Value<bool> isEnabled,
+      Value<bool> isDone,
+      required DateTime createdAt,
+      Value<DateTime?> updatedAt,
+    });
+typedef $$ReminderTableTableUpdateCompanionBuilder =
+    ReminderTableCompanion Function({
+      Value<int> id,
+      Value<String> sourceType,
+      Value<String> sourceId,
+      Value<String> title,
+      Value<String?> subtitle,
+      Value<String?> imageUrl,
+      Value<String?> address,
+      Value<DateTime> targetTime,
+      Value<int> remindBeforeSeconds,
+      Value<DateTime> notifyTime,
+      Value<int> notificationId,
+      Value<String> routePath,
+      Value<String> payloadJson,
+      Value<bool> isEnabled,
+      Value<bool> isDone,
+      Value<DateTime> createdAt,
+      Value<DateTime?> updatedAt,
+    });
+
+class $$ReminderTableTableFilterComposer
+    extends Composer<_$AppDatabase, $ReminderTableTable> {
+  $$ReminderTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get targetTime => $composableBuilder(
+    column: $table.targetTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get remindBeforeSeconds => $composableBuilder(
+    column: $table.remindBeforeSeconds,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get notifyTime => $composableBuilder(
+    column: $table.notifyTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get routePath => $composableBuilder(
+    column: $table.routePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$ReminderTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $ReminderTableTable> {
+  $$ReminderTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceId => $composableBuilder(
+    column: $table.sourceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get title => $composableBuilder(
+    column: $table.title,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subtitle => $composableBuilder(
+    column: $table.subtitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get imageUrl => $composableBuilder(
+    column: $table.imageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get targetTime => $composableBuilder(
+    column: $table.targetTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get remindBeforeSeconds => $composableBuilder(
+    column: $table.remindBeforeSeconds,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get notifyTime => $composableBuilder(
+    column: $table.notifyTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get routePath => $composableBuilder(
+    column: $table.routePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isEnabled => $composableBuilder(
+    column: $table.isEnabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDone => $composableBuilder(
+    column: $table.isDone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$ReminderTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ReminderTableTable> {
+  $$ReminderTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceId =>
+      $composableBuilder(column: $table.sourceId, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<String> get subtitle =>
+      $composableBuilder(column: $table.subtitle, builder: (column) => column);
+
+  GeneratedColumn<String> get imageUrl =>
+      $composableBuilder(column: $table.imageUrl, builder: (column) => column);
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get targetTime => $composableBuilder(
+    column: $table.targetTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get remindBeforeSeconds => $composableBuilder(
+    column: $table.remindBeforeSeconds,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get notifyTime => $composableBuilder(
+    column: $table.notifyTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get notificationId => $composableBuilder(
+    column: $table.notificationId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get routePath =>
+      $composableBuilder(column: $table.routePath, builder: (column) => column);
+
+  GeneratedColumn<String> get payloadJson => $composableBuilder(
+    column: $table.payloadJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isEnabled =>
+      $composableBuilder(column: $table.isEnabled, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDone =>
+      $composableBuilder(column: $table.isDone, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$ReminderTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ReminderTableTable,
+          ReminderTableData,
+          $$ReminderTableTableFilterComposer,
+          $$ReminderTableTableOrderingComposer,
+          $$ReminderTableTableAnnotationComposer,
+          $$ReminderTableTableCreateCompanionBuilder,
+          $$ReminderTableTableUpdateCompanionBuilder,
+          (
+            ReminderTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $ReminderTableTable,
+              ReminderTableData
+            >,
+          ),
+          ReminderTableData,
+          PrefetchHooks Function()
+        > {
+  $$ReminderTableTableTableManager(_$AppDatabase db, $ReminderTableTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ReminderTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ReminderTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ReminderTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> sourceType = const Value.absent(),
+                Value<String> sourceId = const Value.absent(),
+                Value<String> title = const Value.absent(),
+                Value<String?> subtitle = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<DateTime> targetTime = const Value.absent(),
+                Value<int> remindBeforeSeconds = const Value.absent(),
+                Value<DateTime> notifyTime = const Value.absent(),
+                Value<int> notificationId = const Value.absent(),
+                Value<String> routePath = const Value.absent(),
+                Value<String> payloadJson = const Value.absent(),
+                Value<bool> isEnabled = const Value.absent(),
+                Value<bool> isDone = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+              }) => ReminderTableCompanion(
+                id: id,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                title: title,
+                subtitle: subtitle,
+                imageUrl: imageUrl,
+                address: address,
+                targetTime: targetTime,
+                remindBeforeSeconds: remindBeforeSeconds,
+                notifyTime: notifyTime,
+                notificationId: notificationId,
+                routePath: routePath,
+                payloadJson: payloadJson,
+                isEnabled: isEnabled,
+                isDone: isDone,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String sourceType,
+                required String sourceId,
+                required String title,
+                Value<String?> subtitle = const Value.absent(),
+                Value<String?> imageUrl = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                required DateTime targetTime,
+                Value<int> remindBeforeSeconds = const Value.absent(),
+                required DateTime notifyTime,
+                required int notificationId,
+                required String routePath,
+                required String payloadJson,
+                Value<bool> isEnabled = const Value.absent(),
+                Value<bool> isDone = const Value.absent(),
+                required DateTime createdAt,
+                Value<DateTime?> updatedAt = const Value.absent(),
+              }) => ReminderTableCompanion.insert(
+                id: id,
+                sourceType: sourceType,
+                sourceId: sourceId,
+                title: title,
+                subtitle: subtitle,
+                imageUrl: imageUrl,
+                address: address,
+                targetTime: targetTime,
+                remindBeforeSeconds: remindBeforeSeconds,
+                notifyTime: notifyTime,
+                notificationId: notificationId,
+                routePath: routePath,
+                payloadJson: payloadJson,
+                isEnabled: isEnabled,
+                isDone: isDone,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$ReminderTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ReminderTableTable,
+      ReminderTableData,
+      $$ReminderTableTableFilterComposer,
+      $$ReminderTableTableOrderingComposer,
+      $$ReminderTableTableAnnotationComposer,
+      $$ReminderTableTableCreateCompanionBuilder,
+      $$ReminderTableTableUpdateCompanionBuilder,
+      (
+        ReminderTableData,
+        BaseReferences<_$AppDatabase, $ReminderTableTable, ReminderTableData>,
+      ),
+      ReminderTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4460,4 +5859,6 @@ class $AppDatabaseManager {
       $$ActivityTableTableTableManager(_db, _db.activityTable);
   $$SyncMetaTableTableTableManager get syncMetaTable =>
       $$SyncMetaTableTableTableManager(_db, _db.syncMetaTable);
+  $$ReminderTableTableTableManager get reminderTable =>
+      $$ReminderTableTableTableManager(_db, _db.reminderTable);
 }

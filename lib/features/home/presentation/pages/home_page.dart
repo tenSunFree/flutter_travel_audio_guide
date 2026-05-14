@@ -26,14 +26,20 @@ class HomePage extends ConsumerWidget {
           _showErrorSnackBar(context, '找不到景點詳細資料');
           return;
         }
-        context.push(AppRoutes.attractionDetail, extra: attraction);
+        context.push(
+          AppRoutes.attractionDetailPath(attraction.id),
+          extra: attraction,
+        );
       case HomeRecommendType.activity:
         final activity = card.activity;
         if (activity == null) {
           _showErrorSnackBar(context, '找不到活動詳細資料');
           return;
         }
-        context.push(AppRoutes.activityDetail, extra: activity);
+        context.push(
+          AppRoutes.activityDetailPath(activity.id),
+          extra: activity,
+        );
       case HomeRecommendType.audioGuide:
         // There are currently no recommended audio guide cards on the homepage; these are reserved for future use.
         break;

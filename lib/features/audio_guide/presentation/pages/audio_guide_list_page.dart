@@ -70,7 +70,7 @@ class _AudioGuideListPageState extends ConsumerState<AudioGuideListPage> {
 
   Future<void> _handleAction(AudioGuide guide) async {
     if (guide.isDownloaded && guide.localFilePath != null) {
-      context.push(AppRoutes.audioGuideDetail, extra: guide);
+      context.push(AppRoutes.audioGuideDetailPath(guide.id), extra: guide);
       return;
     }
     final error = await ref

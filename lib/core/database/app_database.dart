@@ -8,19 +8,26 @@ import 'daos/attraction_dao.dart';
 import 'daos/audio_guide_dao.dart';
 import 'daos/activity_dao.dart';
 import 'daos/sync_meta_dao.dart';
+import 'tables/reminder_table.dart';
+import 'daos/reminder_dao.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [AttractionTable, AudioGuideTable, ActivityTable, SyncMetaTable],
-  daos: [AttractionDao, AudioGuideDao, ActivityDao, SyncMetaDao],
+  tables: [
+    AttractionTable,
+    AudioGuideTable,
+    ActivityTable,
+    SyncMetaTable,
+    ReminderTable,
+  ],
+  daos: [AttractionDao, AudioGuideDao, ActivityDao, SyncMetaDao, ReminderDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(name: 'travel_guide_db'));
 
-  // Test in-memory database
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 }

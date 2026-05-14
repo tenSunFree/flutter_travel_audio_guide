@@ -76,7 +76,7 @@ class _ActivityListPageState extends ConsumerState<ActivityListPage> {
   }
 
   void _openDetail(Activity activity) {
-    context.push(AppRoutes.activityDetail, extra: activity);
+    context.push(AppRoutes.activityDetailPath(activity.id), extra: activity);
   }
 
   @override
