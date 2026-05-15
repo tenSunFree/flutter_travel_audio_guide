@@ -1,17 +1,19 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'audio_playback_state.freezed.dart';
+
 enum AudioPlaybackStatus { initial, loading, playing, paused, stopped, error }
 
-class AudioPlaybackState {
-  const AudioPlaybackState({
-    this.status = AudioPlaybackStatus.initial,
-    this.position = Duration.zero,
-    this.duration = Duration.zero,
-    this.errorMessage,
-  });
+@freezed
+abstract class AudioPlaybackState with _$AudioPlaybackState {
+  const AudioPlaybackState._();
 
-  final AudioPlaybackStatus status;
-  final Duration position;
-  final Duration duration;
-  final String? errorMessage;
+  const factory AudioPlaybackState({
+    @Default(AudioPlaybackStatus.initial) AudioPlaybackStatus status,
+    @Default(Duration.zero) Duration position,
+    @Default(Duration.zero) Duration duration,
+    String? errorMessage,
+  }) = _AudioPlaybackState;
 
   bool get isReady =>
       status == AudioPlaybackStatus.playing ||
@@ -28,19 +30,4 @@ class AudioPlaybackState {
       status == AudioPlaybackStatus.stopped &&
       duration > Duration.zero &&
       position >= duration;
-
-  AudioPlaybackState copyWith({
-    AudioPlaybackStatus? status,
-    Duration? position,
-    Duration? duration,
-    String? errorMessage,
-    bool clearError = false,
-  }) {
-    return AudioPlaybackState(
-      status: status ?? this.status,
-      position: position ?? this.position,
-      duration: duration ?? this.duration,
-      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-    );
-  }
 }

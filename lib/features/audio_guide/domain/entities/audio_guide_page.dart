@@ -1,15 +1,14 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'audio_guide.dart';
 
-class AudioGuidePage {
-  const AudioGuidePage({
-    required this.total,
-    required this.page,
-    required this.items,
-    required this.hasMore,
-  });
+part 'audio_guide_page.freezed.dart';
 
-  final int total;
-  final int page;
-  final List<AudioGuide> items;
-  final bool hasMore;
+@freezed
+abstract class AudioGuidePage with _$AudioGuidePage {
+  const factory AudioGuidePage({
+    required int total,
+    required int page,
+    required List<AudioGuide> items,
+    required bool hasMore,
+  }) = _AudioGuidePage;
 }

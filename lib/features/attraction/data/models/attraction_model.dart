@@ -1,149 +1,94 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/attraction.dart';
 
-/// Tag Model (shared by target / friendly)
-class AttractionTagModel {
-  const AttractionTagModel({required this.id, required this.name});
+part 'attraction_model.freezed.dart';
 
-  final int id;
-  final String name;
+part 'attraction_model.g.dart';
 
-  factory AttractionTagModel.fromJson(Map<String, dynamic> json) {
-    return AttractionTagModel(
-      id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? '',
-    );
-  }
+double? _toDoubleOrNull(dynamic value) {
+  if (value == null) return null;
+  final d = value is num ? value.toDouble() : double.tryParse('$value');
+  if (d == null || d <= 1.0) return null;
+  return d;
+}
+
+@freezed
+abstract class AttractionTagModel with _$AttractionTagModel {
+  const AttractionTagModel._();
+
+  const factory AttractionTagModel({
+    @Default(0) int id,
+    @Default('') String name,
+  }) = _AttractionTagModel;
+
+  factory AttractionTagModel.fromJson(Map<String, dynamic> json) =>
+      _$AttractionTagModelFromJson(json);
 
   AttractionTag toEntity() => AttractionTag(id: id, name: name);
 }
 
-/// Category Model
-class AttractionCategoryModel {
-  const AttractionCategoryModel({required this.id, required this.name});
+@freezed
+abstract class AttractionCategoryModel with _$AttractionCategoryModel {
+  const AttractionCategoryModel._();
 
-  final int id;
-  final String name;
+  const factory AttractionCategoryModel({
+    @Default(0) int id,
+    @Default('') String name,
+  }) = _AttractionCategoryModel;
 
-  factory AttractionCategoryModel.fromJson(Map<String, dynamic> json) {
-    return AttractionCategoryModel(
-      id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? '',
-    );
-  }
+  factory AttractionCategoryModel.fromJson(Map<String, dynamic> json) =>
+      _$AttractionCategoryModelFromJson(json);
 
   AttractionCategory toEntity() => AttractionCategory(id: id, name: name);
 }
 
-/// Image Model
-class AttractionImageModel {
-  const AttractionImageModel({
-    required this.src,
-    required this.subject,
-    required this.ext,
-  });
+@freezed
+abstract class AttractionImageModel with _$AttractionImageModel {
+  const AttractionImageModel._();
 
-  final String src;
-  final String subject;
-  final String ext;
+  const factory AttractionImageModel({
+    @Default('') String src,
+    @Default('') String subject,
+    @Default('') String ext,
+  }) = _AttractionImageModel;
 
-  factory AttractionImageModel.fromJson(Map<String, dynamic> json) {
-    return AttractionImageModel(
-      src: json['src'] as String? ?? '',
-      subject: json['subject'] as String? ?? '',
-      ext: json['ext'] as String? ?? '',
-    );
-  }
+  factory AttractionImageModel.fromJson(Map<String, dynamic> json) =>
+      _$AttractionImageModelFromJson(json);
 
   AttractionImage toEntity() =>
       AttractionImage(src: src, subject: subject, ext: ext);
 }
 
-/// Attraction Model
-class AttractionModel {
-  const AttractionModel({
-    required this.id,
-    required this.name,
-    required this.introduction,
-    required this.openTime,
-    required this.distric,
-    required this.address,
-    required this.tel,
-    required this.nlat,
-    required this.elong,
-    required this.officialSite,
-    required this.facebook,
-    required this.ticket,
-    required this.remind,
-    required this.modified,
-    required this.url,
-    required this.categories,
-    required this.targets,
-    required this.friendlies,
-    required this.images,
-  });
+@freezed
+abstract class AttractionModel with _$AttractionModel {
+  const AttractionModel._();
 
-  final int id;
-  final String name;
-  final String introduction;
-  final String openTime;
-  final String distric;
-  final String address;
-  final String tel;
-  final double? nlat;
-  final double? elong;
-  final String officialSite;
-  final String facebook;
-  final String ticket;
-  final String remind;
-  final String modified;
-  final String url;
-  final List<AttractionCategoryModel> categories; // API: category[]
-  final List<AttractionTagModel> targets; // API: target[]
-  final List<AttractionTagModel> friendlies; // API: friendly[]
-  final List<AttractionImageModel> images;
+  const factory AttractionModel({
+    @Default(0) int id,
+    @Default('') String name,
+    @Default('') String introduction,
+    @JsonKey(name: 'open_time') @Default('') String openTime,
+    @Default('') String distric,
+    @Default('') String address,
+    @Default('') String tel,
+    double? nlat,
+    double? elong,
+    @JsonKey(name: 'official_site') @Default('') String officialSite,
+    @Default('') String facebook,
+    @Default('') String ticket,
+    @Default('') String remind,
+    @Default('') String modified,
+    @Default('') String url,
+    @JsonKey(name: 'category')
+    @Default([])
+    List<AttractionCategoryModel> categories,
+    @JsonKey(name: 'target') @Default([]) List<AttractionTagModel> targets,
+    @JsonKey(name: 'friendly') @Default([]) List<AttractionTagModel> friendlies,
+    @Default([]) List<AttractionImageModel> images,
+  }) = _AttractionModel;
 
-  static double? _toDoubleOrNull(dynamic value) {
-    if (value == null) return null;
-    final d = value is num ? value.toDouble() : double.tryParse('$value');
-    if (d == null || d <= 1.0) return null;
-    return d;
-  }
-
-  factory AttractionModel.fromJson(Map<String, dynamic> json) {
-    return AttractionModel(
-      id: json['id'] as int? ?? 0,
-      name: json['name'] as String? ?? '',
-      introduction: json['introduction'] as String? ?? '',
-      openTime: json['open_time'] as String? ?? '',
-      distric: json['distric'] as String? ?? '',
-      address: json['address'] as String? ?? '',
-      tel: json['tel'] as String? ?? '',
-      nlat: _toDoubleOrNull(json['nlat']),
-      elong: _toDoubleOrNull(json['elong']),
-      officialSite: json['official_site'] as String? ?? '',
-      facebook: json['facebook'] as String? ?? '',
-      ticket: json['ticket'] as String? ?? '',
-      remind: json['remind'] as String? ?? '',
-      modified: json['modified'] as String? ?? '',
-      url: json['url'] as String? ?? '',
-      categories: (json['category'] as List? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(AttractionCategoryModel.fromJson)
-          .toList(),
-      targets: (json['target'] as List? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(AttractionTagModel.fromJson)
-          .toList(),
-      friendlies: (json['friendly'] as List? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(AttractionTagModel.fromJson)
-          .toList(),
-      images: (json['images'] as List? ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map(AttractionImageModel.fromJson)
-          .toList(),
-    );
-  }
+  factory AttractionModel.fromJson(Map<String, dynamic> json) =>
+      _attractionModelFromJson(json);
 
   Attraction toEntity() {
     return Attraction(
@@ -168,4 +113,11 @@ class AttractionModel {
       images: images.map((e) => e.toEntity()).toList(),
     );
   }
+}
+
+AttractionModel _attractionModelFromJson(Map<String, dynamic> json) {
+  final patched = Map<String, dynamic>.from(json)
+    ..['nlat'] = _toDoubleOrNull(json['nlat'])
+    ..['elong'] = _toDoubleOrNull(json['elong']);
+  return _$AttractionModelFromJson(patched);
 }

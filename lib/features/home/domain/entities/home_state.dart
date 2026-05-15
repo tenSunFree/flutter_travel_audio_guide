@@ -1,5 +1,8 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../activity/domain/entities/activity.dart';
 import '../../../attraction/domain/entities/attraction.dart';
+
+part 'home_state.freezed.dart';
 
 enum HomePeriod { morning, afternoon, evening, night }
 
@@ -15,30 +18,42 @@ enum RecommendStatus {
 
 enum HomeRecommendType { attraction, activity, audioGuide }
 
-class HomeUiState {
-  final HomePeriod selectedPeriod;
-  final bool isRainyMode;
-  final String title;
-  final String subtitle;
-  final HomeRecommendCard? heroCard;
-  final List<HomeRecommendCard> nearbyCards;
-  final List<HomeRecommendCard> activityCards;
-  final List<HomeRecommendCard> availableCards;
-  final bool isLoading;
-  final String? errorMessage;
+@freezed
+abstract class HomeRecommendCard with _$HomeRecommendCard {
+  const factory HomeRecommendCard({
+    required String id,
+    required String title,
+    required String subtitle,
+    required String? imageUrl,
+    required String badgeText,
+    required String? distanceText,
+    required String? reasonText,
+    required RecommendStatus status,
+    required double? lat,
+    required double? lng,
+    required HomeRecommendType type,
+    required String emoji,
+    Attraction? attraction,
+    Activity? activity,
+  }) = _HomeRecommendCard;
+}
 
-  const HomeUiState({
-    required this.selectedPeriod,
-    required this.isRainyMode,
-    required this.title,
-    required this.subtitle,
-    required this.heroCard,
-    required this.nearbyCards,
-    required this.activityCards,
-    required this.availableCards,
-    required this.isLoading,
-    required this.errorMessage,
-  });
+@freezed
+abstract class HomeUiState with _$HomeUiState {
+  const HomeUiState._();
+
+  const factory HomeUiState({
+    required HomePeriod selectedPeriod,
+    required bool isRainyMode,
+    required String title,
+    required String subtitle,
+    required HomeRecommendCard? heroCard,
+    required List<HomeRecommendCard> nearbyCards,
+    required List<HomeRecommendCard> activityCards,
+    required List<HomeRecommendCard> availableCards,
+    required bool isLoading,
+    required String? errorMessage,
+  }) = _HomeUiState;
 
   factory HomeUiState.initial() {
     final period = HomePeriodHelper.fromNow(DateTime.now());
@@ -55,69 +70,6 @@ class HomeUiState {
       errorMessage: null,
     );
   }
-
-  HomeUiState copyWith({
-    HomePeriod? selectedPeriod,
-    bool? isRainyMode,
-    String? title,
-    String? subtitle,
-    HomeRecommendCard? heroCard,
-    List<HomeRecommendCard>? nearbyCards,
-    List<HomeRecommendCard>? activityCards,
-    List<HomeRecommendCard>? availableCards,
-    bool? isLoading,
-    String? errorMessage,
-  }) {
-    return HomeUiState(
-      selectedPeriod: selectedPeriod ?? this.selectedPeriod,
-      isRainyMode: isRainyMode ?? this.isRainyMode,
-      title: title ?? this.title,
-      subtitle: subtitle ?? this.subtitle,
-      heroCard: heroCard ?? this.heroCard,
-      nearbyCards: nearbyCards ?? this.nearbyCards,
-      activityCards: activityCards ?? this.activityCards,
-      availableCards: availableCards ?? this.availableCards,
-      isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage,
-    );
-  }
-}
-
-class HomeRecommendCard {
-  final String id;
-  final String title;
-  final String subtitle;
-  final String? imageUrl;
-  final String badgeText;
-  final String? distanceText;
-  final String? reasonText;
-  final RecommendStatus status;
-  final double? lat;
-  final double? lng;
-  final HomeRecommendType type;
-  final String emoji;
-
-  // Original data, used for direct redirection from the homepage to the details page
-  // No need to query the database again, clicks will automatically take you there
-  final Attraction? attraction;
-  final Activity? activity;
-
-  const HomeRecommendCard({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.imageUrl,
-    required this.badgeText,
-    required this.distanceText,
-    required this.reasonText,
-    required this.status,
-    required this.lat,
-    required this.lng,
-    required this.type,
-    required this.emoji,
-    this.attraction,
-    this.activity,
-  });
 }
 
 extension HomePeriodHelper on HomePeriod {

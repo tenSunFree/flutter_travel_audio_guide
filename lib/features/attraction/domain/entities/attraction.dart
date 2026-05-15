@@ -1,50 +1,32 @@
-class Attraction {
-  const Attraction({
-    required this.id,
-    required this.name,
-    required this.introduction,
-    required this.openTime,
-    required this.distric,
-    required this.address,
-    required this.tel,
-    required this.nlat,
-    required this.elong,
-    required this.officialSite,
-    required this.facebook,
-    required this.ticket,
-    required this.remind,
-    required this.modified,
-    required this.url,
-    required this.categories,
-    required this.targets,
-    required this.friendlies,
-    required this.images,
-  });
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final int id;
-  final String name;
-  final String introduction;
-  final String openTime;
+part 'attraction.freezed.dart';
 
-  // The API field name itself is "distric" (not district).
-  final String distric;
-  final String address;
-  final String tel;
+@freezed
+abstract class Attraction with _$Attraction {
+  const Attraction._();
 
-  // For some attractions, nlat/elong is 0, so use nullable.
-  final double? nlat;
-  final double? elong;
-  final String officialSite;
-  final String facebook;
-  final String ticket;
-  final String remind;
-  final String modified;
-  final String url;
-
-  final List<AttractionCategory> categories; // API: category[]
-  final List<AttractionTag> targets; // Suitable groups
-  final List<AttractionTag> friendlies; // Friendly facilities
-  final List<AttractionImage> images;
+  const factory Attraction({
+    required int id,
+    required String name,
+    required String introduction,
+    required String openTime,
+    required String distric,
+    required String address,
+    required String tel,
+    required String officialSite,
+    required String facebook,
+    required String ticket,
+    required String remind,
+    required String modified,
+    required String url,
+    required List<AttractionCategory> categories,
+    required List<AttractionTag> targets,
+    required List<AttractionTag> friendlies,
+    required List<AttractionImage> images,
+    double? nlat,
+    double? elong,
+  }) = _Attraction;
 
   String get firstImageUrl => images.isNotEmpty ? images.first.src : '';
 
@@ -58,36 +40,28 @@ class Attraction {
     return categories.map((e) => e.name).join('・');
   }
 
-  /// Quickly determine if a specific friendly ID is present (for facility filtering)
   bool hasFriendly(int id) => friendlies.any((f) => f.id == id);
 
-  /// Quickly determine if a target ID is present (for group filtering)
   bool hasTarget(int id) => targets.any((t) => t.id == id);
 }
 
-// Common tags (target / friendly share the same structure)
-class AttractionTag {
-  const AttractionTag({required this.id, required this.name});
-
-  final int id;
-  final String name;
+@freezed
+abstract class AttractionTag with _$AttractionTag {
+  const factory AttractionTag({required int id, required String name}) =
+      _AttractionTag;
 }
 
-class AttractionCategory {
-  const AttractionCategory({required this.id, required this.name});
-
-  final int id;
-  final String name;
+@freezed
+abstract class AttractionCategory with _$AttractionCategory {
+  const factory AttractionCategory({required int id, required String name}) =
+      _AttractionCategory;
 }
 
-class AttractionImage {
-  const AttractionImage({
-    required this.src,
-    required this.subject,
-    required this.ext,
-  });
-
-  final String src;
-  final String subject;
-  final String ext;
+@freezed
+abstract class AttractionImage with _$AttractionImage {
+  const factory AttractionImage({
+    required String src,
+    required String subject,
+    required String ext,
+  }) = _AttractionImage;
 }

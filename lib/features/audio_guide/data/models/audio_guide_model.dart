@@ -1,32 +1,25 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/audio_guide.dart';
 
-class AudioGuideModel {
-  const AudioGuideModel({
-    required this.id,
-    required this.title,
-    required this.summary,
-    required this.url,
-    required this.fileExt,
-    required this.modified,
-  });
+part 'audio_guide_model.freezed.dart';
 
-  final int id;
-  final String title;
-  final String? summary;
-  final String url;
-  final String? fileExt;
-  final String modified;
+part 'audio_guide_model.g.dart';
 
-  factory AudioGuideModel.fromJson(Map<String, dynamic> json) {
-    return AudioGuideModel(
-      id: json['id'] as int,
-      title: json['title'] as String? ?? '',
-      summary: json['summary'] as String?,
-      url: json['url'] as String? ?? '',
-      fileExt: json['file_ext'] as String?,
-      modified: json['modified'] as String? ?? '',
-    );
-  }
+@freezed
+abstract class AudioGuideModel with _$AudioGuideModel {
+  const AudioGuideModel._();
+
+  const factory AudioGuideModel({
+    required int id,
+    @Default('') String title,
+    String? summary,
+    @Default('') String url,
+    @JsonKey(name: 'file_ext') String? fileExt,
+    @Default('') String modified,
+  }) = _AudioGuideModel;
+
+  factory AudioGuideModel.fromJson(Map<String, dynamic> json) =>
+      _$AudioGuideModelFromJson(json);
 
   AudioGuide toEntity({
     required bool isDownloaded,

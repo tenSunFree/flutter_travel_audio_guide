@@ -82,7 +82,12 @@ void main() {
       expect(copy.localFilePath, _guide.localFilePath);
     });
     test('copyWith does not mutate original', () {
-      _guide.copyWith(isDownloaded: true, localFilePath: '/audio/1.mp3');
+      final copy = _guide.copyWith(
+        isDownloaded: true,
+        localFilePath: '/audio/1.mp3',
+      );
+      expect(copy.isDownloaded, isTrue);
+      expect(copy.localFilePath, '/audio/1.mp3');
       expect(_guide.isDownloaded, isFalse);
       expect(_guide.localFilePath, isNull);
     });
@@ -171,7 +176,7 @@ void main() {
       );
       final updated = state.copyWith(
         status: AudioPlaybackStatus.stopped,
-        clearError: true,
+        errorMessage: null,
       );
       expect(updated.status, AudioPlaybackStatus.stopped);
       expect(updated.errorMessage, isNull);

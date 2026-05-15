@@ -1,13 +1,13 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'attraction.dart';
 
-class AttractionPage {
-  const AttractionPage({
-    required this.total,
-    required this.page,
-    required this.data,
-  });
+part 'attraction_page.freezed.dart';
 
-  final int total;
-  final int page;
-  final List<Attraction> data;
+@freezed
+abstract class AttractionPage with _$AttractionPage {
+  const factory AttractionPage({
+    required int total,
+    required int page,
+    required List<Attraction> data,
+  }) = _AttractionPage;
 }

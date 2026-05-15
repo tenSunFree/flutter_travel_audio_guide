@@ -33,19 +33,16 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
         _updateState(_state.copyWith(duration: duration));
       }),
     );
-
     _subscriptions.add(
       _player.onPositionChanged.listen((position) {
         _updateState(_state.copyWith(position: position));
       }),
     );
-
     _subscriptions.add(
       _player.onPlayerStateChanged.listen((playerState) {
         _updateState(_state.copyWith(status: _mapStatus(playerState)));
       }),
     );
-
     _subscriptions.add(
       _player.onPlayerComplete.listen((_) {
         _updateState(
@@ -76,15 +73,16 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
   @override
   Future<void> initialize(String filePath) async {
     _updateState(
-      _state.copyWith(status: AudioPlaybackStatus.loading, clearError: true),
+      _state.copyWith(status: AudioPlaybackStatus.loading, errorMessage: null),
     );
-
     try {
       await _player.setReleaseMode(ReleaseMode.stop);
       await _player.setSource(DeviceFileSource(filePath));
-
       _updateState(
-        _state.copyWith(status: AudioPlaybackStatus.stopped, clearError: true),
+        _state.copyWith(
+          status: AudioPlaybackStatus.stopped,
+          errorMessage: null,
+        ),
       );
     } catch (e) {
       _updateState(
@@ -100,8 +98,7 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
   Future<void> play() async {
     try {
       await _player.resume();
-
-      _updateState(_state.copyWith(clearError: true));
+      _updateState(_state.copyWith(errorMessage: null));
     } catch (e) {
       _updateState(
         _state.copyWith(
@@ -116,8 +113,7 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
   Future<void> pause() async {
     try {
       await _player.pause();
-
-      _updateState(_state.copyWith(clearError: true));
+      _updateState(_state.copyWith(errorMessage: null));
     } catch (e) {
       _updateState(
         _state.copyWith(
@@ -132,8 +128,7 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
   Future<void> seek(Duration position) async {
     try {
       await _player.seek(position);
-
-      _updateState(_state.copyWith(clearError: true));
+      _updateState(_state.copyWith(errorMessage: null));
     } catch (e) {
       _updateState(
         _state.copyWith(
@@ -149,7 +144,6 @@ class AudioPlaybackServiceImpl implements AudioPlaybackService {
     for (final subscription in _subscriptions) {
       await subscription.cancel();
     }
-
     await _player.dispose();
     await _stateController.close();
   }

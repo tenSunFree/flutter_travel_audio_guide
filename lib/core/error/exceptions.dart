@@ -1,23 +1,13 @@
-class ServerException implements Exception {
-  ServerException(this.message);
-  final String message;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  @override
-  String toString() => message;
-}
+part 'exceptions.freezed.dart';
 
-class DownloadException implements Exception {
-  DownloadException(this.message);
-  final String message;
+@freezed
+sealed class AppException with _$AppException implements Exception {
+  const factory AppException.server(String message) = ServerException;
 
-  @override
-  String toString() => message;
-}
+  const factory AppException.download(String message) = DownloadException;
 
-class LocalStorageException implements Exception {
-  LocalStorageException(this.message);
-  final String message;
-
-  @override
-  String toString() => message;
+  const factory AppException.localStorage(String message) =
+      LocalStorageException;
 }

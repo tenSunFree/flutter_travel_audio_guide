@@ -1,15 +1,14 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'activity.dart';
 
-class ActivityPage {
-  const ActivityPage({
-    required this.total,
-    required this.page,
-    required this.items,
-    required this.hasMore,
-  });
+part 'activity_page.freezed.dart';
 
-  final int total;
-  final int page;
-  final List<Activity> items;
-  final bool hasMore;
+@freezed
+abstract class ActivityPage with _$ActivityPage {
+  const factory ActivityPage({
+    required int total,
+    required int page,
+    required List<Activity> items,
+    required bool hasMore,
+  }) = _ActivityPage;
 }
