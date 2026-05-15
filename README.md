@@ -90,6 +90,7 @@ This project is for learning and technical practice.
 - Clean Architecture with separation of data, domain, and presentation layers
 - Feature-first project structure
 - State management with `flutter_riverpod`
+- Immutable domain entities, API models, and UI states with Freezed
 - Local persistence with Drift and generated DAOs
 - HTTP client with Dio and centralized request / response logging via Talker
 - Type-safe Android native method channels generated with Pigeon
@@ -122,6 +123,8 @@ This project is for learning and technical practice.
   Layered software design (Independent domain logic, high testability, and strict separation of concerns)
 - flutter_riverpod  
   Reactive state management & dependency injection (Compile-safe providers, automatic lifecycle management, and improved testability)
+- Freezed  
+  Code generation for immutable data models and sealed UI states (Eliminates hand-written `copyWith`, `==`, and `hashCode` boilerplate; keeps domain entities, API response models, and presentation states consistent and immutable)
 - Dio  
   Robust HTTP client (Handles API communication, file downloading, and standardized request handling)
 - audioplayers  
