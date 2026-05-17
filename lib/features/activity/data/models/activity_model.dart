@@ -78,11 +78,18 @@ abstract class ActivityModel with _$ActivityModel {
 
 ActivityModel _activityModelFromJson(Map<String, dynamic> json) {
   final rawLinks = json['links'];
-  final links = (rawLinks is List)
-      ? rawLinks
-            .whereType<Map<String, dynamic>>()
-            .map(ActivityLinkModel.fromJson)
-            .toList()
-      : <ActivityLinkModel>[];
-  return _$ActivityModelFromJson({...json, 'links': links});
+  List<Map<String, dynamic>> normalizedLinks = [];
+  if (rawLinks is List) {
+    for (final e in rawLinks) {
+      if (e is Map<String, dynamic>) {
+        // Normal situation: JSON map returned by the API
+        normalizedLinks.add(e);
+      } else if (e is ActivityLinkModel) {
+        // Defense status: It has already been parsed into a model (e.g., cache or secondary parsing).
+        normalizedLinks.add(e.toJson());
+      }
+      // Other data types are skipped (null, int, and other abnormal values)
+    }
+  }
+  return _$ActivityModelFromJson({...json, 'links': normalizedLinks});
 }
